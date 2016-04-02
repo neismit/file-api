@@ -13,7 +13,7 @@ You will need the following things properly installed on your computer.
 #### Installation
 
 * `git clone` this repository
-* `vagrant up` in repository directory
+* `vagrant up` in the repository directory
 
 #### Running Tests
 
