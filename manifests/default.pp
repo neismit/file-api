@@ -8,3 +8,9 @@ package { "python-software-properties":
 }
 
 include ::php
+
+package { "php5-curl":
+  provider => "apt",
+  ensure => present,
+  require => Class["::php"],
+}

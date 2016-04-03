@@ -3,3 +3,5 @@ php::ensure: latest
 php::composer: true
 php::repo::ubuntu::ppa: "ondrej/php5-5.6"
 php::manage_repos: true
+php::fpm: false
+php::pear: false
