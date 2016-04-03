@@ -8,6 +8,9 @@ $config = [
     'bootstrap' => ['log'],
     'components' => [
         'request' => [
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ],
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'japtxVafrKvV6eb1FgNHQ7RhMT5jx4DU',
         ],
@@ -17,16 +20,10 @@ $config = [
         'user' => [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
+            'enableSession' => false,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
-        ],
-        'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure a transport
-            // for the mailer to send real emails.
-            'useFileTransport' => true,
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -38,14 +35,29 @@ $config = [
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
+            'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
+                [
+                    'class' => 'yii\rest\UrlRule', 'controller' => 'user', 
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule', 
+                    'controller' => 'file', 
+                    'extraPatterns' => [
+//                      'PUT,PATCH files/<id>' => 'file/update',
+//                      'DELETE files/<id>' => 'file/delete',
+                        'GET,HEAD files/<name:\w+>' => 'file/view',
+//                      'POST files' => 'file/create',
+                        'GET,HEAD files' => 'file/index',
+                        'files/<id>' => 'file/options',
+//                      'files' => 'file/options', 
+                    ],                    
+                ],
             ],
         ],
-        */
     ],
     'params' => $params,
 ];
