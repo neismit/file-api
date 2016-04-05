@@ -45,13 +45,13 @@ $config = [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule', 
-                    'controller' => 'file', 
+                    'controller' => 'api/v1/file', 
                     'extraPatterns' => [
 //                      'PUT,PATCH files/<id>' => 'file/update',
 //                      'DELETE files/<id>' => 'file/delete',
-                        'GET,HEAD files/<name:\w+>' => 'file/view',
+                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
 //                      'POST files' => 'file/create',
-                        'GET,HEAD files' => 'file/index',
+                        'GET,HEAD api/v1/files' => 'file/index',
                         'files/<id>' => 'file/options',
 //                      'files' => 'file/options', 
                     ],                    
