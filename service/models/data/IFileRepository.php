@@ -2,6 +2,8 @@
 
 namespace app\models\data;
 
+use app\models\FileMetadata;
+
 /**
  * Interface for file operation
  * 
