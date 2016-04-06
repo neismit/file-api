@@ -77,6 +77,7 @@ class FileRepositoryFSTest extends TestCase
             $pathToFile = File::getFullPathMetadata('t1TestSave.txt');
             verify(file_exists($pathToFile))->true();
             
+            // delete saved file
             unlink($pathToFile);
         });
     }
