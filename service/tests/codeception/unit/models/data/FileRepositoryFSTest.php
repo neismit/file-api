@@ -67,7 +67,18 @@ class FileRepositoryFSTest extends TestCase
     }
     
     public function testSaveFileMetadata() {
-        
+        $this->specify('Test save FileMetadata', function() {
+            $metadata = FakeFileRepository::getFileMetadata('t1.txt', 1);
+            $metadata->Name = 't1TestSave.txt';
+            verify($metadata)->isInstanceOf('app\models\FileMetadata');
+            
+            verify(FileRepositoryFS::saveFileMetadata($metadata))->true();
+            
+            $pathToFile = File::getFullPathMetadata('t1TestSave.txt');
+            verify(file_exists($pathToFile))->true();
+            
+            unlink($pathToFile);
+        });
     }
 
 }
