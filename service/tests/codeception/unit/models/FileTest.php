@@ -19,14 +19,23 @@ class FileTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        Yii::$app->params['dataFolder'] = '/test';
     }
 
     // tests
     public function testGetFullPathFile()
     {
-        $fullFilePath = File::getFullPathFile('testfilename.ss');        
-        $this->assertEquals($fullFilePath, '/test/testfilename.ss');
+        $this->specify('Check get full path file from config', function() {
+            $fullFilePath = File::getFullPathFile('testfilename.ss');        
+            verify($fullFilePath)->equals(Yii::$app->params['dataFolder'] . '/testfilename.ss');
+        }); 
+    }
+    
+    public function testGetFullPathMetadataFile()
+    {
+        $this->specify('Check get full path metadata file from config', function() {
+            $fullFilePath = File::getFullPathMetadata('testfilename.ss');        
+            verify($fullFilePath)->equals(Yii::$app->params['metadataFolder'] . '/testfilename.ss');
+        }); 
     }
 
 }
