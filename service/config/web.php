@@ -5,7 +5,18 @@ $params = require(__DIR__ . '/params.php');
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => [
+        [
+            'class' => 'yii\filters\ContentNegotiator',
+            'formats' => [
+                'application/json' => yii\web\Response::FORMAT_JSON,
+                'application/xml' => yii\web\Response::FORMAT_XML,                
+            ],
+            'languages' => [
+                'en',
+            ],
+        ],
+    ],
     'components' => [
         'request' => [
             'parsers' => [
@@ -47,12 +58,12 @@ $config = [
                     'class' => 'yii\rest\UrlRule', 
                     'controller' => 'api/v1/file', 
                     'extraPatterns' => [
-//                      'PUT,PATCH files/<id>' => 'file/update',
+//                        'PUT,PATCH files/<id>' => 'file/update',
 //                      'DELETE files/<id>' => 'file/delete',
-                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
+//                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
 //                      'POST files' => 'file/create',
-                        'GET,HEAD api/v1/files' => 'file/index',
-                        'files/<id>' => 'file/options',
+                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/index',
+//                        'files/<id>' => 'file/options',
 //                      'files' => 'file/options', 
                     ],                    
                 ],
