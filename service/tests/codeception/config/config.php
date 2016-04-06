@@ -2,6 +2,8 @@
 /**
  * Application configuration shared by all test types
  */
+$params = require(__DIR__ . '/params.php');
+
 return [
     'language' => 'en-US',
     'controllerMap' => [
@@ -23,4 +25,5 @@ return [
             'showScriptName' => false,
         ],
     ],
+    'params' => $params,
 ];
