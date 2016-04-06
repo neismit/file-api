@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\base\Model;
+use app\models\File;
 
 /**
  * Description of file metadata
@@ -40,4 +41,33 @@ class FileMetadata extends Model {
      * @var integer
      */
     public $Owner;
+    
+    /**
+     * Mime file type
+     * @var string
+     */
+    public $Type;
+    
+    /**
+     * Create metadate from file
+     * @param string $fileName
+     * @param string $type Mime file type
+     * @param integer $userId
+     * @return \app\models\FileMetadata
+     * @throws \InvalidArgumentException if the file doesn't exist
+     */
+    public static function createMetadata($fileName, $type, $userId) {
+        $fullPathFile = File::getFullPathFile($fileName);
+        if (!file_exists($fullPathFile)) {
+            throw new \InvalidArgumentException();
+        }
+        $metadata = new FileMetadata();
+        $metadata->Name = $fileName;
+        $metadata->Size = filesize($fullPathFile);
+        $metadata->Created = (new \DateTime('now'))->format(\DateTime::ISO8601);
+        $metadata->Modified = $metadata->Created;
+        $metadata->Owner = $userId;
+        $metadata->Type = $type;
+        return $metadata;
+    }
 }
