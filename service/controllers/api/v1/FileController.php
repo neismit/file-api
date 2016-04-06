@@ -3,10 +3,11 @@
 namespace app\controllers\api\v1;
 
 use Yii;
+use yii\web;
+use yii\web\Response;
 use yii\rest\Controller;
 use app\models\data\IFileRepository;
 use app\models\data\AccessDenied;
-use yii\web;
 use app\models\File;
 use app\models\FileMetadata;
 
@@ -16,6 +17,18 @@ use app\models\FileMetadata;
  * @author andrey
  */
 class FileController extends Controller {
+
+//    public function behaviors()
+//    {
+//        return [
+//            'verbs' => [
+//                'class' => \yii\filters\VerbFilter::className(),
+//                'actions' => [
+//                    'index'  => ['get', 'head'],
+//                ],
+//            ],
+//        ];
+//    }
     
     private $fileRepository;
     
@@ -25,6 +38,12 @@ class FileController extends Controller {
         parent::__construct($id, $module, $config);
     }
 
+    /**
+     * GET Files list
+     * GET with name File and metadata
+     * HEAD with name send only metadata in header response
+     * @param string $name File name
+     */
     public function actionIndex($name = NULL)
     {
         $userId = 1;
@@ -39,9 +58,20 @@ class FileController extends Controller {
                     return;
                 } else {
                     $fullPath = File::getFullPathFile($metadata->Name);
-                    Yii::error('FullPath: ' . $fullPath);
                     $fileHandler = File::getFileStream($fullPath);
-                    Yii::$app->response->sendStreamAsFile($fileHandler);
+                    
+                    $header = Yii::$app->response->headers;
+                    $header->add('x-file-metadata', json_encode($metadata));
+                    Yii::trace('name: ' . $name);
+                    if (Yii::$app->request->isHead) {
+                        Yii::trace(__METHOD__);
+                        // send only metadata in header
+                        Yii::$app->response->statusCode = 200;
+                        return;
+                    }
+                    
+                    Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
+                        ['mimeType' => $metadata->Type, 'fileSize' => $metadata->Size]);
                 }
             } catch (AccessDenied $ex) {
                 Yii::$app->response->statusCode = 403;
@@ -52,7 +82,9 @@ class FileController extends Controller {
     
     public function actionView($name)
     {
-        $folder = Yii::$app->params->get('dataFolder');
-        return;
+        //$folder = Yii::$app->params->get('dataFolder');
+        $metadata = FileMetadata::createMetadata($name, 'text/plain', '1');
+        $this->fileRepository->saveFileMetadata($metadata);
+        return 200;
     }
 }

@@ -6,6 +6,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => [
+        'log',
         [
             'class' => 'yii\filters\ContentNegotiator',
             'formats' => [
@@ -37,11 +38,14 @@ $config = [
             'errorAction' => 'site/error',
         ],
         'log' => [
+            'flushInterval' => 1,
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'levels' => ['error', 'warning'],
+                    'levels' => ['error', 'warning', 'trace', 'info'],
+                    'exportInterval' => 1,
+                    'logFile' => '@runtime/logs/app1.log',
                 ],
             ],
         ],
