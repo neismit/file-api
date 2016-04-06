@@ -26,6 +26,3 @@ composer
 phpunit.phar
 # local phpunit config
 /phpunit.xml
-
-#dir for file
-/data
