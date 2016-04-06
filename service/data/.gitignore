@@ -1,4 +1,4 @@
 *
 !.gitignore
-!files/.gitkeep
-!metadata/.gitkeep
+!/files/.gitkeep
+!/metadata/.gitkeep
