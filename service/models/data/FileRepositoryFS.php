@@ -10,7 +10,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     
     public static function getFileMetadata($fileName, $userId) {
         $pathMetadata = File::getFullPathMetadata($fileName);
-        assert('!is_null($pathMetadata)', 'Check params metadataFolder');
+        //assert('!is_null($pathMetadata)', 'Check params metadataFolder');
         
         $metadata = FileRepositoryFS::loadFileMetadata($pathMetadata);
         if (is_null($metadata)) {
@@ -32,7 +32,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         if (is_null($handle)) {
             return FALSE;
         }
-        if (!fwrite($handle, $jsonMetadata)) {
+        if (!fwrite($handle, $jsonMetadata . PHP_EOL)) {
             fclose($handle);
             return FALSE;
         }
@@ -42,7 +42,23 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     }
     
     public static function getFiles($userId) {
-        return ['1', '2', 't1'];
+        $pathMetadataDir = \Yii::$app->params['metadataFolder'];
+        $metaFiles = scandir($pathMetadataDir);
+        $filesList = [];
+        if (!$metaFiles) {
+            return NULL;
+        }
+        foreach ($metaFiles as $fileName) {
+            $fullPath = File::getFullPathMetadata($fileName);
+            $metadata = FileRepositoryFS::loadFileMetadata($fullPath);
+            if (is_null($metadata)) {
+                continue;
+            }
+            if ($metadata->Owner === $userId) {
+                $filesList[] = $metadata;
+            }
+        }
+        return $filesList;
     }
     
     public static function createFile($fileMetadata, $userId) {
@@ -54,7 +70,8 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
             return NULL;
         }
         $handle = fopen($fullMetadataPath, "r");
-        $jsonMetadata = fgets($handle);
+        $fileSize = filesize($fullMetadataPath);
+        $jsonMetadata = fgets($handle, $fileSize);
         fclose($handle);
         $metadata = new FileMetadata(json_decode($jsonMetadata, TRUE));
         return $metadata;
