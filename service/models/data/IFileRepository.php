@@ -30,7 +30,7 @@ interface IFileRepository {
         /**
      * List of files by user
      * @param integer $userId
-     * @return Array[string]
+     * @return Array[string]|NULL
      */
     public static function getFiles($userId);
     
