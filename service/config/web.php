@@ -38,13 +38,13 @@ $config = [
             'errorAction' => 'site/error',
         ],
         'log' => [
-            'flushInterval' => 1,
+            'flushInterval' => 1000,
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning', 'trace', 'info'],
-                    'exportInterval' => 1,
+                    'exportInterval' => 1000,
                     'logFile' => '@runtime/logs/app1.log',
                 ],
             ],
@@ -67,8 +67,7 @@ $config = [
 //                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
 //                      'POST files' => 'file/create',
                         'GET,HEAD api/v1/files/<name:\w+>' => 'file/index',
-//                        'files/<id>' => 'file/options',
-//                      'files' => 'file/options', 
+                        'OPTIONS api/v1/files/<name:\w+>' => 'file/options',
                     ],                    
                 ],
             ],

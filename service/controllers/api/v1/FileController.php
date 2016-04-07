@@ -38,10 +38,21 @@ class FileController extends Controller {
         parent::__construct($id, $module, $config);
     }
 
-    /**
+    public function actionOptions($name = NULL) {
+        $response = Yii::$app->response;
+        $response->statusCode = 200;
+        if (is_null($name)) {
+            $response->headers->add('Allow', 'OPTIONS, GET, PUT, PATCH, DELETE');
+            return;
+        } else {
+            $response->headers->add('Allow', 'OPTIONS, HEAD, GET, PUT, PATCH, DELETE');
+        }
+    }
+
+        /**
      * GET Files list
-     * GET with name File and metadata
-     * HEAD with name send only metadata in header response
+     * GET with $name return File and metadata in header x-file-metadata
+     * HEAD with name send only metadata in header (x-file-metadata) response
      * @param string $name File name
      */
     public function actionIndex($name = NULL)
@@ -62,9 +73,7 @@ class FileController extends Controller {
                     
                     $header = Yii::$app->response->headers;
                     $header->add('x-file-metadata', json_encode($metadata));
-                    Yii::trace('name: ' . $name);
                     if (Yii::$app->request->isHead) {
-                        Yii::trace(__METHOD__);
                         // send only metadata in header
                         Yii::$app->response->statusCode = 200;
                         return;
