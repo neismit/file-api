@@ -39,7 +39,7 @@ class FileMetadataTest extends TestCase
      * Create file metadata, check all fileds
      */
     public function testCreateMetadata() {
-        $metadata = FileMetadata::createMetadata($this->fileNameTest, 'text/plane', 1);
+        $metadata = FileMetadata::createMetadata($this->fileNameTest, 1);
         $this->assertInstanceOf(FileMetadata::class, $metadata);
         //verify($metadata)->isInstanceOf('app\models\FileMetadata');
         
@@ -54,7 +54,7 @@ class FileMetadataTest extends TestCase
         //verify($modified->format('Y-M-D'))->equals((new \DateTime('now'))->format('Y-M-D'));
 
         $this->assertEquals($metadata->Modified, $metadata->Created);
-        $this->assertEquals('text/plane', $metadata->Type);
+        $this->assertEquals('text/plain', $metadata->Type);
         $this->assertEquals(1, $metadata->Owner);
 //        verify($metadata->Created)->equals($metadata->Modified);
 //        verify($metadata->Type)->equals('text/plane');
@@ -66,7 +66,7 @@ class FileMetadataTest extends TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateMetadataFileNotFound() {
-        FileMetadata::createMetadata('textFail', 'text/plane', 1);
+        FileMetadata::createMetadata('textFail', 1);
     }
 
 }

@@ -56,7 +56,7 @@ class FileMetadata extends Model {
      * @return \app\models\FileMetadata
      * @throws \InvalidArgumentException if the file doesn't exist
      */
-    public static function createMetadata($fileName, $type, $userId) {
+    public static function createMetadata($fileName, $userId) {
         $fullPathFile = File::getFullPathFile($fileName);
         if (!file_exists($fullPathFile)) {
             throw new \InvalidArgumentException();
@@ -67,7 +67,11 @@ class FileMetadata extends Model {
         $metadata->Created = (new \DateTime('now'))->format(\DateTime::ISO8601);
         $metadata->Modified = $metadata->Created;
         $metadata->Owner = $userId;
-        $metadata->Type = $type;
+        
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fullPathFile);
+        finfo_close($finfo);
+        $metadata->Type = $mimeType;
         return $metadata;
     }
 }
