@@ -16,7 +16,6 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         if (is_null($metadata)) {
             return NULL;
         }
-        \Yii::trace(gettype($metadata->Owner) . ' ' . json_encode($metadata));
         if ($userId === $metadata->Owner) {
             return $metadata;
         }
