@@ -70,7 +70,11 @@ class FileController extends Controller {
                 } else {
                     $fullPath = File::getFullPathFile($metadata->Name);
                     $fileHandler = File::getFileStream($fullPath);
-                    
+                    if (is_null($fileHandler)) {
+                        Yii::error($fullPath . ' - file not exist, metadata loaded');
+                        Yii::$app->response->statusCode = 500;
+                        return;
+                    }
                     $header = Yii::$app->response->headers;
                     $header->add('x-file-metadata', json_encode($metadata));
                     if (Yii::$app->request->isHead) {
