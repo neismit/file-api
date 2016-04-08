@@ -9,8 +9,8 @@ use app\models\FileMetadata;
 class FileRepositoryFS implements \app\models\data\IFileRepository {
     
     public static function getFileMetadata($fileName, $userId) {
+        assert('!is_null($fileName)', 'getFileMetadata, $fileName is null');
         $pathMetadata = File::getFullPathMetadata($fileName);
-        //assert('!is_null($pathMetadata)', 'Check params metadataFolder');
         
         $metadata = FileRepositoryFS::loadFileMetadata($pathMetadata);
         if (is_null($metadata)) {
@@ -25,8 +25,8 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     }
     
     public static function saveFileMetadata($metadata) {
+        assert('!is_null($metadata)', 'saveFileMetadata, metadata is null');
         $pathMetadata = File::getFullPathMetadata($metadata->Name);
-        assert('!is_null($pathMetadata)', 'Check params metadataFolder');
         $jsonMetadata = json_encode($metadata);
         $handle = fopen($pathMetadata, 'w');
         if (is_null($handle)) {
@@ -61,6 +61,57 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return $filesList;
     }
     
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $blockSizeForRead = 1024) {
+        assert('!is_null($inputFileHandler)', 'createFileFormStream, inputFileHandler in null');
+        assert('!is_null($fileName)', 'createFileFormStream, $fileName is null');
+        
+        $pathToFile = File::getFullPathFile($fileName);
+        $saveFileHandler = fopen($pathToFile, 'w');
+        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
+            fwrite($saveFileHandler, $data);
+        }
+        fclose($inputFileHandler);
+        fflush($saveFileHandler);
+        fclose($saveFileHandler);
+                
+        $metadata = FileMetadata::createMetadata($fileName, $userId);
+        if (!FileRepositoryFS::saveFileMetadata($metadata)) {
+            unlink($pathToFile);
+            return FALSE;
+        }
+        
+        return TRUE;
+    }
+    
+    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition, $userId) {
+//        if (is_null($inputFileHandler)) {
+//            return FALSE;
+//        }
+//        $pathToFile = File::getFullPathFile($fileName);
+//        $pathToMetadata = File::getFullPathMetadata($fileName);
+//        $metadata = NULL;
+//        if (file_exists($pathToMetadata)) {
+//            $metadata = FileRepositoryFS::loadFileMetadata($pathToMetadata);
+//            if ($metadata->Owner !== $userId) {
+//                throw new AccessDenied();
+//            }
+//        }
+//        $saveFileHandler = fopen($pathToFile, 'w');
+//        while ($data = fread($inputFileHandler, 1024)) {
+//            fwrite($saveFileHandler, $data);
+//        }
+//        fclose($inputFileHandler);
+//        fflush($saveFileHandler);
+//        fclose($saveFileHandler);
+//        
+//        if (is_null($metadata)) {
+//            
+//        } else {
+//            
+//        }
+//        return TRUE;
+    }
+
     public static function createFile($fileMetadata, $userId) {
         return null;
     }

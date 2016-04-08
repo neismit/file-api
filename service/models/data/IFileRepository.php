@@ -34,5 +34,14 @@ interface IFileRepository {
      */
     public static function getFiles($userId);
     
-    public static function createFile($fileMetadata, $userId);
+    /**
+     * Create file and metadata for file from stream.
+     * It doesn't update the file. For updates, use updateFileFromStream
+     * @param resource $inputFileHandler
+     * @param string $fileName
+     * @param integer $userId
+     * @param integer $blockSizeForRead
+     * @return boolean
+     */
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $blockSizeForRead = 1024);
 }
