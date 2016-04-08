@@ -35,7 +35,7 @@ class FakeFileRepository implements IFileRepository {
         }
         if ($fileName == 'test img' && $userId == 1) {
             return new FileMetadata([
-                'Name' => 't2',
+                'Name' => 'test img',
                 'Size' => 1024,
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',

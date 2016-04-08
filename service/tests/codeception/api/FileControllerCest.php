@@ -1,6 +1,9 @@
 <?php
 use \ApiTester;
 
+use tests\codeception\fake\FakeFileRepository;
+use app\models\FileMetadata;
+
 class FileControllerCest
 {
     public function _before(ApiTester $I)
@@ -25,11 +28,17 @@ class FileControllerCest
 
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
-        $I->seeResponseContainsJson(['t1.txt', 't3']);
+        $I->seeResponseContainsJson(
+            [ 
+                0 => [ 'Name' => 't1.txt' ],
+                1 => [ 'Name' => 't2' ],
+                2 => [ 'Name' => 'test img' ],
+            ]);
     }
     
     public function getEmptyFilesList(ApiTester $I) {
         $I->wantTo('get files list on user 1');
+        throw new Exception();
     }
 
     /**
@@ -38,7 +47,7 @@ class FileControllerCest
      */
     public function getFileOnNameNotFound(ApiTester $I)
     {
-        $I->wantTo('get file 123');
+        $I->wantTo('GET file 123');
 
         //Здесь добавить аутентификацию по пользователю
 
@@ -48,6 +57,8 @@ class FileControllerCest
         $I->wantTo('response 404');
         $I->seeResponseCodeIs(404);
     }
+    
+    
     
     
 }

@@ -16,6 +16,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         if (is_null($metadata)) {
             return NULL;
         }
+        \Yii::trace(gettype($metadata->Owner) . ' ' . json_encode($metadata));
         if ($userId === $metadata->Owner) {
             return $metadata;
         }
@@ -70,8 +71,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
             return NULL;
         }
         $handle = fopen($fullMetadataPath, "r");
-        $fileSize = filesize($fullMetadataPath);
-        $jsonMetadata = fgets($handle, $fileSize);
+        $jsonMetadata = fgets($handle);
         fclose($handle);
         $metadata = new FileMetadata(json_decode($jsonMetadata, TRUE));
         return $metadata;
