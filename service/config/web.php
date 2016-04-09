@@ -38,37 +38,41 @@ $config = [
             'errorAction' => 'site/error',
         ],
         'log' => [
-            'flushInterval' => 1000,
+            'flushInterval' => 1,
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning', 'trace', 'info'],
-                    'exportInterval' => 1000,
+                    'exportInterval' => 1,
                     'logFile' => '@runtime/logs/app1.log',
                 ],
             ],
         ],
-        'db' => require(__DIR__ . '/db.php'),
+        //'db' => require(__DIR__ . '/db.php'),
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
                 [
-                    'class' => 'yii\rest\UrlRule', 'controller' => 'user', 
-                ],
-                [
                     'class' => 'yii\rest\UrlRule', 
                     'controller' => 'api/v1/file', 
-                    'extraPatterns' => [
-//                        'PUT,PATCH files/<id>' => 'file/update',
-//                      'DELETE files/<id>' => 'file/delete',
-//                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
-//                      'POST files' => 'file/create',
-                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/index',
-                        'OPTIONS api/v1/files/<name:\w+>' => 'file/options',
-                    ],                    
+                    'pluralize' => false,
+//                    'prefix' => 'api/v1',
+                    'patterns' => [
+                        'OPTIONS' => 'options',
+                        'GET,HEAD' => 'index', 
+                        'PUT' => 'upload',
+                    ],
+//                    'extraPatterns' => [
+////                      'DELETE files/<id>' => 'file/delete',
+////                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/view',
+////                        'POST api/v1/files' => 'file/create',
+//                        'GET,HEAD api/v1/files/<name:\w+>' => 'file/index',
+////                        'OPTIONS api/v1/files/<name:\w+>' => 'file/options',
+//                        'PUT api/v1/files/<name:\w+>' => 'file/upload',
+//                    ],                    
                 ],
             ],
         ],
