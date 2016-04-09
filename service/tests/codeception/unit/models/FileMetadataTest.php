@@ -19,19 +19,26 @@ class FileMetadataTest extends TestCase
 
     private $fileNameTest = 'test.txt';
 
-
+    private $fileNameUpdateTest = 'test_update';
+    
     protected function setUp()
     {
         parent::setUp();
-        // create file for test
-        $handle = fopen(File::getFullPathFile($this->fileNameTest), 'w');
+        // create file for test\createFile
+        $this->createFile($this->fileNameTest);
+        $this->createFile($this->fileNameUpdateTest);
+    }
+    
+    private function createFile($fileName) {
+        $handle = fopen(File::getFullPathFile($fileName), 'w');
         fwrite($handle, 'test' . PHP_EOL);
         fflush($handle);
         fclose($handle);
     }
-    
-    protected function tearDown() {
+
+        protected function tearDown() {
         unlink(File::getFullPathFile($this->fileNameTest));
+        unlink(File::getFullPathFile($this->fileNameUpdateTest));
         parent::tearDown();
     }
 
@@ -67,6 +74,28 @@ class FileMetadataTest extends TestCase
      */
     public function testCreateMetadataFileNotFound() {
         FileMetadata::createMetadata('textFail', 1);
+    }
+    
+    public function testUpdateMetadataOk() {
+        $metadata = FileMetadata::createMetadata($this->fileNameUpdateTest, 1);
+        $dateCreate = new \DateTime('now');
+        $dateCreate->setDate(2015, 1, 1);
+        $dateCreateString = $dateCreate->format(\DateTime::ISO8601);
+        $metadata->Created = $dateCreateString;
+        $metadata->Modified = $dateCreateString;
+        // change file
+        $pathToFile = File::getFullPathFile($this->fileNameUpdateTest);
+        $handle = fopen($pathToFile, 'w');
+        fwrite($handle, '1');
+        fflush($handle);
+        fclose($handle);
+        
+        $metadata->update();
+        
+        // check changes
+        $this->assertEquals(filesize($pathToFile), $metadata->Size);
+        $this->assertNotEquals($metadata->Created, $metadata->Modified);
+        $this->assertNotEquals($dateCreateString, $metadata->Modified);
     }
 
 }
