@@ -74,4 +74,10 @@ class FileMetadata extends Model {
         $metadata->Type = $mimeType;
         return $metadata;
     }
+    
+    public function update() {
+        $this->Modified = (new \DateTime('now'))->format(\DateTime::ISO8601);
+        assert('!is_null($this->Name)', 'FileMetadata: Name is null!');
+        $this->Size = filesize(File::getFullPathFile($this->Name));
+    }
 }
