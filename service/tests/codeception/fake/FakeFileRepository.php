@@ -68,8 +68,12 @@ class FakeFileRepository implements IFileRepository {
         }
     }
     
-    public static function createFile($fileMetadata, $userId) {
-        return NULL;
-    }       
+    public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
+        return FALSE;
+    }
+
+    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014) {
+        return FALSE;
+    }
 }
 

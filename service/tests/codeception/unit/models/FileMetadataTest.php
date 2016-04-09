@@ -7,6 +7,7 @@ use yii\codeception\TestCase;
 use Codeception\Specify;
 use app\models\File;
 use app\models\FileMetadata;
+use tests\codeception\helper\FileHelper;
 
 class FileMetadataTest extends TestCase
 {
@@ -25,18 +26,11 @@ class FileMetadataTest extends TestCase
     {
         parent::setUp();
         // create file for test\createFile
-        $this->createFile($this->fileNameTest);
-        $this->createFile($this->fileNameUpdateTest);
-    }
-    
-    private function createFile($fileName) {
-        $handle = fopen(File::getFullPathFile($fileName), 'w');
-        fwrite($handle, 'test' . PHP_EOL);
-        fflush($handle);
-        fclose($handle);
+        FileHelper::createFile(File::getFullPathFile($this->fileNameTest), 'test');
+        FileHelper::createFile(File::getFullPathFile($this->fileNameUpdateTest), 'test');
     }
 
-        protected function tearDown() {
+    protected function tearDown() {
         unlink(File::getFullPathFile($this->fileNameTest));
         unlink(File::getFullPathFile($this->fileNameUpdateTest));
         parent::tearDown();
@@ -53,7 +47,7 @@ class FileMetadataTest extends TestCase
         $this->assertEquals($this->fileNameTest, $metadata->Name);
         //verify($metadata->Name)->equals($this->fileNameTest);
         
-        $this->assertEquals(5, $metadata->Size);
+        $this->assertEquals(4, $metadata->Size);
         //verify($metadata->Size)->equals(5);
 
         $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Modified);

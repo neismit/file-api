@@ -61,7 +61,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return $filesList;
     }
     
-    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $blockSizeForRead = 1024) {
+    public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
         assert('!is_null($inputFileHandler)', 'createFileFormStream, inputFileHandler in null');
         assert('!is_null($fileName)', 'createFileFormStream, $fileName is null');
         
@@ -77,7 +77,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return TRUE;
     }
 
-    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $startPosition = 0, $blockSizeForRead = 1014) {
+    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014) {
         assert('!is_null($inputFileHandler)', 'updateFileFormStream, inputFileHandler in null');
         if (!is_int($startPosition)) {
             throw new \InvalidArgumentException();

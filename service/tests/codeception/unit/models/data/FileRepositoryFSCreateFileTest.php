@@ -8,12 +8,16 @@ use Codeception\Specify;
 use app\models\File;
 use app\models\data\FileRepositoryFS;
 use tests\codeception\fake\FakeFileRepository;
+use tests\codeception\helper\FileHelper;
+use app\models\FileMetadata;
 
 class FileRepositoryFSCreateFileTest extends TestCase
 {
     use Specify;
     
     private $fileName = 'test_create.txt';
+    
+    private $fileWithData = 'test_update.txt';
 
     /**
      * @var \UnitTester
@@ -23,16 +27,17 @@ class FileRepositoryFSCreateFileTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
+        
         $path = File::getFullPathFile($this->fileName);
-        $handle = fopen($path, 'w');
-        fwrite($handle, 'many many many words, very very very very very very very very very very very very long text');
-        fflush($handle);
-        fclose($handle);
+        $pathUpdate = File::getFullPathFile($this->fileWithData);
+        FileHelper::createFile($path, 'test');
+        FileHelper::createFile($pathUpdate, 'append text');
     }
     
     protected function tearDown() {
         $path = File::getFullPathFile($this->fileName);
         unlink($path);
+        unlink(File::getFullPathFile($this->fileWithData));
         parent::tearDown();
     }
     
@@ -40,24 +45,24 @@ class FileRepositoryFSCreateFileTest extends TestCase
         $pathToFile = File::getFullPathFile($this->fileName);
         $handle = fopen($pathToFile, 'r');
         $copyFileName = 'copy_' . $this->fileName;
-        $this->assertTrue(FileRepositoryFS::createFileFromStream($handle, $copyFileName, 1));
+        $this->assertTrue(FileRepositoryFS::createFileFromStream($handle, $copyFileName));
         //check file content
         $pathToCopyFile = File::getFullPathFile($copyFileName);
         $this->assertFileEquals($pathToFile, $pathToCopyFile);
-        
-        //check metadata file
-        $metadata = FileRepositoryFS::getFileMetadata($copyFileName, 1);
-        $this->assertEquals($metadata->Name, $copyFileName);
-        $this->assertEquals($metadata->Owner, 1);
-        $this->assertEquals($metadata->Type, 'text/plain');
-        $this->assertEquals(filesize($pathToFile), filesize($pathToCopyFile));
-        
-        $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Modified);
-        $this->assertEquals((new \DateTime('now'))->format('Y-M-D'), $modified->format('Y-M-D'));
-        $this->assertEquals($metadata->Modified, $metadata->Created);
-        
-        $pathToMetadata = File::getFullPathMetadata($copyFileName);
-        unlink($pathToMetadata);
+
         unlink($pathToCopyFile);
+    }
+    
+    public function testUpdateFileFormStreamOk() {
+        $pathToOriginFile = File::getFullPathFile($this->fileName);
+        $updatedFileSize = filesize($pathToOriginFile);
+        $pathToFileData = File::getFullPathFile($this->fileWithData);
+        $handle = fopen($pathToFileData, 'r');
+        
+        $this->assertTrue(FileRepositoryFS::updateFileFromStream($handle, $this->fileName, $updatedFileSize));
+        
+        clearstatcache();
+        // 'test_create.txt' + 'test_update.txt'
+        $this->assertEquals(15, filesize($pathToOriginFile));
     }
 }

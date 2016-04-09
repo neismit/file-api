@@ -39,21 +39,19 @@ interface IFileRepository {
      * It doesn't update the file. For updates, use updateFileFromStream
      * @param resource $inputFileHandler
      * @param string $fileName
-     * @param integer $userId
      * @param integer $blockSizeForRead
      * @return boolean
      */
-    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $blockSizeForRead = 1024);
+    public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024);
     
     /**
      * Update the file from strem, 
      * @param resource $inputFileHandler
      * @param string $fileName
-     * @param integer $userId
      * @param integer $startPosition
      * @param integer $blockSizeForRead
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $startPosition = 0, $blockSizeForRead = 1014);
+    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014);
 }
