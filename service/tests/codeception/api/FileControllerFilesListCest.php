@@ -27,7 +27,7 @@ class FileControllerFilesList
         //Здесь добавить аутентификацию по пользователю
         //$I->amHttpAuthenticated('service_user', '123456');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/files');
+        $I->sendGET('api/v1/file');
 
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
@@ -40,7 +40,7 @@ class FileControllerFilesList
     }
     
     public function getEmptyFilesList(ApiTester $I) {
-        $I->wantTo('get files list on user 1');
+        $I->wantTo('get empty files list on user 5');
         throw new \Exception();
     }
 }

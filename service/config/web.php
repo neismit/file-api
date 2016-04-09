@@ -58,7 +58,6 @@ $config = [
                     'class' => 'yii\rest\UrlRule', 
                     'controller' => 'api/v1/file', 
                     'pluralize' => false,
-//                    'prefix' => 'api/v1',
                     'patterns' => [
                         'OPTIONS' => 'options',
                         'GET,HEAD' => 'index', 

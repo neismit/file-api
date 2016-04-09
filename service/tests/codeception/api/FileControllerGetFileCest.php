@@ -35,7 +35,7 @@ class FileControllerGetFileCest
         //Здесь добавить аутентификацию по пользователю
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/files', ['name' => 't2']);
+        $I->sendGET('api/v1/file', ['name' => 't2']);
 
         $I->wantTo('response 500');
         $I->seeResponseCodeIs(500);
@@ -47,7 +47,7 @@ class FileControllerGetFileCest
         //Здесь добавить аутентификацию по пользователю
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/files', ['name' => 't1.txt']);
+        $I->sendGET('api/v1/file', ['name' => 't1.txt']);
 
         $I->wantTo('response 200, file, file metadata');
         $jsonMetadata = json_encode(
@@ -67,7 +67,7 @@ class FileControllerGetFileCest
         //Здесь добавить аутентификацию по пользователю
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/files', ['name' => '123']);
+        $I->sendGET('api/v1/file', ['name' => '123']);
 
         $I->wantTo('response 404');
         $I->seeResponseCodeIs(404);
@@ -79,7 +79,7 @@ class FileControllerGetFileCest
         //Здесь добавить аутентификацию по пользователю
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendHEAD('api/v1/files?name=t1.txt'); 
+        $I->sendHEAD('api/v1/file?name=t1.txt'); 
         // если в этот метод передавать запросы параметром, как в GET, он прикрепляет их в 
         // тело запроса, а не в url
         //, ['name' => 't1.txt']
