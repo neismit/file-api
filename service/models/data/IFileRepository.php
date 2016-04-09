@@ -44,4 +44,16 @@ interface IFileRepository {
      * @return boolean
      */
     public static function createFileFromStream($inputFileHandler, $fileName, $userId, $blockSizeForRead = 1024);
+    
+    /**
+     * Update the file from strem, 
+     * @param resource $inputFileHandler
+     * @param string $fileName
+     * @param integer $userId
+     * @param integer $startPosition
+     * @param integer $blockSizeForRead
+     * @return boolean
+     * @throws \InvalidArgumentException
+     */
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $startPosition = 0, $blockSizeForRead = 1014);
 }

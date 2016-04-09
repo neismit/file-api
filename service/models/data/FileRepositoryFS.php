@@ -73,43 +73,28 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         fclose($inputFileHandler);
         fflush($saveFileHandler);
         fclose($saveFileHandler);
-                
-        $metadata = FileMetadata::createMetadata($fileName, $userId);
-        if (!FileRepositoryFS::saveFileMetadata($metadata)) {
-            unlink($pathToFile);
-            return FALSE;
-        }
         
         return TRUE;
     }
-    
-    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition, $userId) {
-//        if (is_null($inputFileHandler)) {
-//            return FALSE;
-//        }
-//        $pathToFile = File::getFullPathFile($fileName);
-//        $pathToMetadata = File::getFullPathMetadata($fileName);
-//        $metadata = NULL;
-//        if (file_exists($pathToMetadata)) {
-//            $metadata = FileRepositoryFS::loadFileMetadata($pathToMetadata);
-//            if ($metadata->Owner !== $userId) {
-//                throw new AccessDenied();
-//            }
-//        }
-//        $saveFileHandler = fopen($pathToFile, 'w');
-//        while ($data = fread($inputFileHandler, 1024)) {
-//            fwrite($saveFileHandler, $data);
-//        }
-//        fclose($inputFileHandler);
-//        fflush($saveFileHandler);
-//        fclose($saveFileHandler);
-//        
-//        if (is_null($metadata)) {
-//            
-//        } else {
-//            
-//        }
-//        return TRUE;
+
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $startPosition = 0, $blockSizeForRead = 1014) {
+        assert('!is_null($inputFileHandler)', 'updateFileFormStream, inputFileHandler in null');
+        if (!is_int($startPosition)) {
+            throw new \InvalidArgumentException();
+        }
+        $pathToFile = File::getFullPathFile($fileName);
+        if ($startPosition > filesize($pathToFile)) {
+            throw new \InvalidArgumentException();
+        }        
+        $saveFileHandler = fopen($pathToFile, 'a');
+        fseek($saveFileHandler, $startPosition);
+        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
+            fwrite($saveFileHandler, $data);
+        }
+        fclose($inputFileHandler);
+        fflush($saveFileHandler);
+        fclose($saveFileHandler);
+        return TRUE;
     }
 
     public static function createFile($fileMetadata, $userId) {
