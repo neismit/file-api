@@ -12,7 +12,7 @@ You will need the following things properly installed on your computer:
 * `git clone` this repository
 * `vagrant up` in the repository directory
 * `vagrant ssh` connect to VM
-* `php -S 0.0.0.0:8080 -t /vagrant/service/web` run service
+* `php -S 0.0.0.0:8080 -t /vagrant/service/web` run service (it is available in host: localhost:3000/api/v1/file)
 
 #### Running Tests
 
