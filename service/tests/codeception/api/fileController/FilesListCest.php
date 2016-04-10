@@ -1,13 +1,13 @@
 <?php
 
-namespace tests\codeception\api;
+namespace tests\codeception\api\fileController;
 
 use \ApiTester;
 
 use tests\codeception\fake\FakeFileRepository;
 use app\models\FileMetadata;
 
-class FileControllerFilesList
+class FilesListCest
 {
     public function _before(ApiTester $I)
     {

@@ -1,12 +1,12 @@
 <?php
 
-namespace tests\codeception\api;
+namespace tests\codeception\api\fileController;
 
 use \ApiTester;
 use app\models\File;
 use tests\codeception\fake\FakeFileRepository;
 
-class FileControllerGetFileCest
+class GetFileCest
 {
     private $testFileName = 't1.txt';
 

@@ -146,7 +146,7 @@ class FileController extends Controller {
         }
         
         $pathToFile = File::getFullPathFile($name);
-        if (file_exists($pathToFile) && $overwrite) {
+        if (file_exists($pathToFile)) {
             $metadata = $this->fileRepository->getFileMetadata($name, $userId);
             if (is_null($metadata)) {
                 Yii::error('actionUpload: $metadata is null for file: ' . $pathToFile);
@@ -155,27 +155,42 @@ class FileController extends Controller {
                 Yii::$app->response->statusCode = 500;
                 return;
             }
-            // rewrite file
-            if ($metadata->Owner === $userId) {
-                $data = fopen("php://input", "r");
-                
-                throw  new Exception();
-                $result = $this->fileRepository->updateFileFromStream($data, $name, $position, $userId);
-                $metadata->update();                
-                $this->fileRepository->saveFileMetadata($metadata);
-                $this->setMetadataHeader($metadata);
-                Yii::$app->response->statusCode = 200;
-                return;
-            } else {
+            if ($metadata->Owner !== $userId) {
                 Yii::warning('actionCreate: Access denied. file: ' . $pathToFile . ' userId: ' . $userId);
                 Yii::$app->response->statusCode = 403;
                 return;
             }
+            if (!$overwrite) {
+                Yii::$app->response->statusCode = 400;
+                Yii::$app->response->content = "Atempt to change existing file, but 'overwrite = false";
+                return;
+            }
+            
+            // rewrite file
+            $data = fopen("php://input", "r");
+            if (is_null($data)) {
+                Yii::$app->response->statusCode = 204;
+                Yii::$app->response->content = "Atach a file to the request";
+                return;
+            }
+            $resUpdate = $this->fileRepository->updateFileFromStream($data, $name, $position);
+            if (!$resUpdate) {
+                Yii::error('actionUpload: file not update');
+                Yii::$app->response->statusCode = 500;
+                return;
+            }
+            clearstatcache();
+            $metadata->update();                
+            $this->fileRepository->saveFileMetadata($metadata);
+            $this->setMetadataHeader($metadata);
+            Yii::$app->response->statusCode = 200;
+            return;
         } else {
             //create file
             $data = fopen("php://input", "r");
-            $this->fileRepository->createFileFromStream($data, $name, $userId);
+            $this->fileRepository->createFileFromStream($data, $name);
             $metadata = FileMetadata::createMetadata($name, $userId);
+            $this->fileRepository->saveFileMetadata($metadata);
             $this->setMetadataHeader($metadata);
             Yii::$app->response->statusCode = 201;
             return;

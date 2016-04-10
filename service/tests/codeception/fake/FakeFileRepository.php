@@ -4,6 +4,7 @@ namespace tests\codeception\fake;
 
 use app\models\data\IFileRepository;
 use app\models\FileMetadata;
+use app\models\data\FileRepositoryFS;
 
 class FakeFileRepository implements IFileRepository {
 
@@ -51,7 +52,7 @@ class FakeFileRepository implements IFileRepository {
     }
     
     public static function saveFileMetadata($metadata) {
-        return false;
+        return FileRepositoryFS::saveFileMetadata($metadata);
     }
     
     public static function getFiles($userId) {
@@ -69,11 +70,11 @@ class FakeFileRepository implements IFileRepository {
     }
     
     public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
-        return FALSE;
+        return FileRepositoryFS::createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead);
     }
 
     public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014) {
-        return FALSE;
+        return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $startPosition, $blockSizeForRead);
     }
 }
 

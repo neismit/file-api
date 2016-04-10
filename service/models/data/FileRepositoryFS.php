@@ -85,7 +85,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         $pathToFile = File::getFullPathFile($fileName);
         if ($startPosition > filesize($pathToFile)) {
             throw new \InvalidArgumentException();
-        }        
+        }
         $saveFileHandler = fopen($pathToFile, 'a');
         fseek($saveFileHandler, $startPosition);
         while ($data = fread($inputFileHandler, $blockSizeForRead)) {
