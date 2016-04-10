@@ -88,48 +88,6 @@ class FileController extends Controller {
         return 200;
     }
     
-//    public function actionCreate($overwrite = FALSE) 
-//    {
-//        Yii::$app->request->enableCsrfValidation = false;
-//        $request = Yii::$app->request;
-//        Yii::error('Request headers: ' . print_r($request->headers));
-//        $userId = 1;
-//        
-//        $pathToFile = File::getFullPathFile($name);
-//        if (file_exists($pathToFile) && $overwrite) {
-//            $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-//            if (is_null($metadata)) {
-//                Yii::error('actionCreate: $metadata is null for file: ' . $pathToFile);
-//                Yii::$app->response->statusCode = 500;
-//                return;
-//            }
-//            // rewrite file
-//            if ($metadata->Owner === $userId) {
-//                
-//                
-// 
-//                
-//                throw new \Exception();
-//            } else {
-//                Yii::warning('actionCreate: Access denied. file: ' . $pathToFile . ' userId: ' . $userId);
-//                Yii::$app->response->statusCode = 403;
-//                return;
-//            }
-//        }
-//        
-//        $data = fopen("php://input", "r");
-//        if ($this->fileRepository->createFileFromStream($data, '', $userId)) {
-//            Yii::$app->response->statusCode = 201;
-//            $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-//            $header = Yii::$app->response->headers;
-//            $header->add('x-file-metadata', json_encode($metadata));
-//            return;
-//        }
-//        
-//        
-//        return;
-//    }
-    
     /**
      * PUT, PATH Upload file, creating file or overwrite existing file
      * @param string $name - file name
@@ -186,6 +144,10 @@ class FileController extends Controller {
             Yii::$app->response->statusCode = 200;
             return;
         } else {
+            if (\Yii::$app->request->isPatch) {
+                Yii::$app->response->statusCode = 400;
+                Yii::$app->response->content = "Atempt to create file with PATCH";
+            }         
             //create file
             $data = fopen("php://input", "r");
             $this->fileRepository->createFileFromStream($data, $name);
@@ -197,7 +159,25 @@ class FileController extends Controller {
         }
     }
     
-    /**
+    public function actionDelete($name) {
+        $userId = 1;
+        try {
+            $this->fileRepository->deleteFile($name, $userId);
+            Yii::$app->response->statusCode = 200;
+            Yii::$app->response->content = "File deleted";
+        }
+        catch(\InvalidArgumentException $ex) {
+            Yii::$app->response->statusCode = 404;
+            Yii::$app->response->content = "File not found";
+        }
+        catch (AccessDenied $ex) {
+            Yii::warning('actionCreate: Access denied. file: ' . $name . ' userId: ' . $userId);
+            Yii::$app->response->statusCode = 403;
+        }
+        return;
+    }
+
+        /**
      * Sets the header x-file-metadata
      * @param FileMetadata $metadata
      */

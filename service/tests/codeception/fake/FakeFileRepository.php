@@ -14,7 +14,7 @@ class FakeFileRepository implements IFileRepository {
     ];
 
     public static function getFileMetadata($fileName, $userId) {
-        if ($fileName == 't1.txt' && $userId == 1) {
+        if ($fileName === 't1.txt' && $userId === 1) {
             return new FileMetadata([
                 'Name' => 't1.txt',
                 'Size' => 24,
@@ -24,7 +24,7 @@ class FakeFileRepository implements IFileRepository {
                 'Owner' => 1
             ]);
         }
-        if ($fileName == 't2' && $userId == 1) {
+        if ($fileName === 't2' && $userId === 1) {
             return new FileMetadata([
                 'Name' => 't2',
                 'Size' => 17,
@@ -34,7 +34,7 @@ class FakeFileRepository implements IFileRepository {
                 'Owner' => 1
             ]);
         }
-        if ($fileName == 'test img' && $userId == 1) {
+        if ($fileName === 'test img' && $userId === 1) {
             return new FileMetadata([
                 'Name' => 'test img',
                 'Size' => 1024,
@@ -44,8 +44,21 @@ class FakeFileRepository implements IFileRepository {
                 'Owner' => 1
             ]);
         }
-        if (($fileName == 't1.txt' || $fileName == 't2' || $fileName == 'test img') 
-                && $userId == 2) {
+        if ($fileName === 'test2img' && $userId === 2) {
+            return new FileMetadata([
+                'Name' => 'test img',
+                'Size' => 1024,
+                'Modified' => '2016-04-06T06:34:46+0000',
+                'Created' => '2016-04-06T06:34:46+0000',
+                'Type' => 'image/jpg',
+                'Owner' => 2
+            ]);
+        }
+        if (($fileName === 't1.txt' || $fileName === 't2' || $fileName === 'test img') 
+                && $userId === 2) {
+            throw new \app\models\data\AccessDenied();
+        }
+        if ($fileName === 'test2img' && $userId === 1) {
             throw new \app\models\data\AccessDenied();
         }
         
@@ -75,6 +88,20 @@ class FakeFileRepository implements IFileRepository {
 
     public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014) {
         return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $startPosition, $blockSizeForRead);
+    }
+    
+    public static function deleteFile($fileName, $userId) {
+        if ($fileName === 't1.txt' && $userId === 1) {
+            return TRUE;
+        }
+        if ($fileName === 'test2img' && $userId !== 2) {
+            throw new \app\models\data\AccessDenied();
+        }
+        if ($fileName === 'accessdenid' && $userId !== 1) {
+            throw new \app\models\data\AccessDenied();
+        }
+        
+        throw new \InvalidArgumentException();
     }
 }
 

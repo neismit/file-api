@@ -96,9 +96,20 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         fclose($saveFileHandler);
         return TRUE;
     }
-
-    public static function createFile($fileMetadata, $userId) {
-        return null;
+    
+    public static function deleteFile($fileName, $userId) {
+        $path = File::getFullPathFile($fileName);
+        if (!file_exists($path)) {
+            throw new \InvalidArgumentException();
+        }
+        $metadata = FileRepositoryFS::getFileMetadata($fileName, $userId);
+        if ($metadata->Owner !== $userId) {
+            throw new AccessDenied();
+        }
+        unlink($path);
+        $pathToMetadata = File::getFullPathMetadata($fileName);
+        unlink($pathToMetadata);
+        return TRUE;
     }
     
     private static function loadFileMetadata($fullMetadataPath) {

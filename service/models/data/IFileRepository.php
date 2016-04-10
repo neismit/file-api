@@ -54,4 +54,13 @@ interface IFileRepository {
      * @throws \InvalidArgumentException
      */
     public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014);
+    
+    /**
+     * Deletes the file and metadata file
+     * @param string $fileName
+     * @param integer $userId
+     * @return boolean
+     * @throws \InvalidArgumentException if file doesn't exist
+     */
+    public static function deleteFile($fileName, $userId);
 }

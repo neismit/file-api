@@ -62,7 +62,7 @@ $config = [
                         'OPTIONS' => 'options',
                         'GET,HEAD' => 'index', 
                         'PUT' => 'upload',
-//                        'PUT /<name:\w+>' => 'upload',
+                        'DELETE ' => 'delete',
                     ],
 //                    'extraPatterns' => [
 ////                      'DELETE files/<id>' => 'file/delete',
