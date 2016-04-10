@@ -14,3 +14,9 @@ package { "php5-curl":
   ensure => present,
   require => Class["::php"],
 }
+
+exec { 'composer install package':
+  command => "composer install",
+  cwd => "/vagrant/service",
+  require => Class["::php"],
+}
