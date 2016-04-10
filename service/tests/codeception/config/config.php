@@ -18,9 +18,9 @@ return [
         'mailer' => [
             'useFileTransport' => true,
         ],
-        'urlManager' => [
-            'showScriptName' => false,
-        ],
+//        'urlManager' => [
+//            'showScriptName' => false,
+//        ],
     ],
     'params' => $params,
 ];
