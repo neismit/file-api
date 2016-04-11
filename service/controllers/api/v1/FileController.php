@@ -30,7 +30,7 @@ class FileController extends Controller {
         $response = Yii::$app->response;
         $response->statusCode = 200;
         if (is_null($name)) {
-            $response->headers->add('Allow', 'OPTIONS, GET, PUT, PATCH, DELETE');
+            $response->headers->add('Allow', 'OPTIONS, GET, HEAD');
         } else {
             $response->headers->add('Allow', 'OPTIONS, HEAD, GET, PUT, PATCH, DELETE');
         }
@@ -47,7 +47,13 @@ class FileController extends Controller {
     {
         $userId = 1;
         if (is_null($name)) {
-            return $this->fileRepository->getFiles($userId);
+            $metadataList = $this->fileRepository->getFiles($userId);
+            Yii::$app->response->statusCode = 200;
+            if (Yii::$app->request->isHead) {
+                $this->setMetadataHeader($metadataList);
+                return;
+            }
+            return $metadataList;
         } else {            
             // не самое лучшее решение для быстродействия, но зато красивее
             try {
@@ -78,14 +84,6 @@ class FileController extends Controller {
                 return;
             }
         }
-    }
-    
-    public function actionView($name)
-    {
-        //$folder = Yii::$app->params->get('dataFolder');
-        $metadata = FileMetadata::createMetadata($name, '1');
-        $this->fileRepository->saveFileMetadata($metadata);
-        return 200;
     }
     
     /**
