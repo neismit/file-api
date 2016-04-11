@@ -32,7 +32,7 @@ interface IFileRepository {
      * @param integer $userId
      * @return Array[string]|NULL
      */
-    public static function getFiles($userId);
+    public static function getFilesMetadata($userId);
     
     /**
      * Create file and metadata for file from stream.

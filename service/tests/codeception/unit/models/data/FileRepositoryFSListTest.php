@@ -55,7 +55,7 @@ class FileRepositoryFSListTest extends TestCase
      * Files list testing, ok
      */
     public function testGetListFiles() {
-        $filesMetadata = FileRepositoryFS::getFiles($this->userId);
+        $filesMetadata = FileRepositoryFS::getFilesMetadata($this->userId);
         verify(is_array($filesMetadata))->true();
         verify($filesMetadata)->count(3);
         foreach ($filesMetadata as $meta) {
@@ -68,7 +68,7 @@ class FileRepositoryFSListTest extends TestCase
      * Get list files, userId = 4
      */
     public function testGetEmptyListFiles() {
-        $filesMetadata = FileRepositoryFS::getFiles(4);
+        $filesMetadata = FileRepositoryFS::getFilesMetadata(4);
         verify(is_array($filesMetadata))->true();
         verify($filesMetadata)->isEmpty();
     }

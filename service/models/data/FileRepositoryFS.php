@@ -41,7 +41,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return TRUE;
     }
     
-    public static function getFiles($userId) {
+    public static function getFilesMetadata($userId) {
         $pathMetadataDir = \Yii::$app->params['metadataFolder'];
         $metaFiles = scandir($pathMetadataDir);
         $filesList = [];

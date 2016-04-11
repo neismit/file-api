@@ -47,7 +47,7 @@ class FileController extends Controller {
     {
         $userId = 1;
         if (is_null($name)) {
-            $metadataList = $this->fileRepository->getFiles($userId);
+            $metadataList = $this->fileRepository->getFilesMetadata($userId);
             Yii::$app->response->statusCode = 200;
             if (Yii::$app->request->isHead) {
                 $this->setMetadataHeader($metadataList);
@@ -61,28 +61,27 @@ class FileController extends Controller {
                 if(is_null($metadata)) {
                     Yii::$app->response->statusCode = 404;
                     return;
-                } else {
-                    $fullPath = File::getFullPathFile($metadata->Name);
-                    $fileHandler = File::getFileStream($fullPath);
-                    if (is_null($fileHandler)) {
-                        Yii::error($fullPath . ' - file not exist, metadata loaded');
-                        Yii::$app->response->statusCode = 500;
-                        return;
-                    }
-                    $this->setMetadataHeader($metadata);
-                    if (Yii::$app->request->isHead) {
-                        // send only metadata in header
-                        Yii::$app->response->statusCode = 200;
-                        return;
-                    }
-                    
-                    Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
-                        ['mimeType' => $metadata->Type, 'fileSize' => $metadata->Size]);
                 }
+                $fullPath = File::getFullPathFile($metadata->Name);
+                $fileHandler = File::getFileStream($fullPath);
+                if (is_null($fileHandler)) {
+                    Yii::error($fullPath . ' - file not exist, metadata loaded');
+                    Yii::$app->response->statusCode = 500;
+                    return;
+                }
+                $this->setMetadataHeader($metadata);
+                if (Yii::$app->request->isHead) {
+                    // send only metadata in header
+                    Yii::$app->response->statusCode = 200;
+                    return;
+                }
+
+                Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
+                    ['mimeType' => $metadata->Type, 'fileSize' => $metadata->Size]);
             } catch (AccessDenied $ex) {
                 Yii::$app->response->statusCode = 403;
-                return;
             }
+            return;
         }
     }
     

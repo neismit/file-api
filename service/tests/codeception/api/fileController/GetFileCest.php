@@ -74,7 +74,7 @@ class GetFileCest
     }
     
     public function headFileOnNameOk(ApiTester $I) {
-        $I->wantTo('GET file t1.txt');
+        $I->wantTo('HEAD file t1.txt');
 
         //Здесь добавить аутентификацию по пользователю
 
@@ -89,5 +89,5 @@ class GetFileCest
                 FakeFileRepository::getFileMetadata($this->testFileName, 1));
         $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
         $I->seeResponseCodeIs(200);
-    }
+    }    
 }

@@ -68,7 +68,7 @@ class FakeFileRepository implements IFileRepository {
         return FileRepositoryFS::saveFileMetadata($metadata);
     }
     
-    public static function getFiles($userId) {
+    public static function getFilesMetadata($userId) {
         switch ($userId) {
             case 1: {
                 $files = [];
