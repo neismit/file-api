@@ -62,10 +62,10 @@ class FileRepositoryFSTest extends TestCase
 
     /**
      * Error in file name, file not found
+     * @expectedException app\models\data\NotFound
      */
     public function testLoadFileMetadataNotFound() {
         $metadata = FileRepositoryFS::getFileMetadata('t111.txt', 1);
-        $this->assertEquals(NULL, $metadata);
     }
     
     public function testSaveFileMetadata() {

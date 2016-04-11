@@ -7,7 +7,6 @@ use yii\codeception\TestCase;
 use Codeception\Specify;
 use app\models\File;
 use app\models\data\FileRepositoryFS;
-use tests\codeception\fake\FakeFileRepository;
 use app\models\FileMetadata;
 use tests\codeception\helper\FileHelper;
 
@@ -55,7 +54,7 @@ class FileRepositoryFSDeleteTest extends TestCase
     
     /**
      * Testing delete file
-     * @expectedException \InvalidArgumentException
+     * @expectedException app\models\data\NotFound
      */
     public function testDeleteFileInvalidFileName() {
         FileRepositoryFS::deleteFile('fake_file', 1);
@@ -63,7 +62,7 @@ class FileRepositoryFSDeleteTest extends TestCase
     
     /**
      * Testing delete file
-     * @expectedException \app\models\data\AccessDenied
+     * @expectedException app\models\data\AccessDenied
      */
     public function testDeleteFileAccessDenied() {
         FileRepositoryFS::deleteFile($this->fileName, 2);

@@ -61,6 +61,14 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return $filesList;
     }
     
+    public static function getFileStream($fileName, $userId) {
+        $pathToMetadata = File::getFullPathMetadata($fileName);
+        $metadata = FileRepositoryFS::loadFileMetadata($pathToMetadata);
+        throw new \Exception();
+        $handle = fopen($filePath, 'r');
+        return $handle;
+    }
+    
     public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
         assert('!is_null($inputFileHandler)', 'createFileFormStream, inputFileHandler in null');
         assert('!is_null($fileName)', 'createFileFormStream, $fileName is null');
@@ -99,9 +107,6 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     
     public static function deleteFile($fileName, $userId) {
         $path = File::getFullPathFile($fileName);
-        if (!file_exists($path)) {
-            throw new \InvalidArgumentException();
-        }
         $metadata = FileRepositoryFS::getFileMetadata($fileName, $userId);
         if ($metadata->Owner !== $userId) {
             throw new AccessDenied();
@@ -112,9 +117,15 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return TRUE;
     }
     
+    /**
+     * Load the metadata file from FS and decode it
+     * @param type $fullMetadataPath
+     * @return FileMetadata
+     * @throws NotFound file metadata not found
+     */
     private static function loadFileMetadata($fullMetadataPath) {
         if (!file_exists($fullMetadataPath)) {
-            return NULL;
+            throw new NotFound();
         }
         $handle = fopen($fullMetadataPath, "r");
         $jsonMetadata = fgets($handle);

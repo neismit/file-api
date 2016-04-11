@@ -8,6 +8,7 @@ use yii\web\Response;
 use yii\rest\Controller;
 use app\models\data\IFileRepository;
 use app\models\data\AccessDenied;
+use app\models\data\NotFound;
 use app\models\File;
 use app\models\FileMetadata;
 
@@ -58,10 +59,6 @@ class FileController extends Controller {
             // не самое лучшее решение для быстродействия, но зато красивее
             try {
                 $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-                if(is_null($metadata)) {
-                    Yii::$app->response->statusCode = 404;
-                    return;
-                }
                 $fullPath = File::getFullPathFile($metadata->Name);
                 $fileHandler = File::getFileStream($fullPath);
                 if (is_null($fileHandler)) {
@@ -80,6 +77,8 @@ class FileController extends Controller {
                     ['mimeType' => $metadata->Type, 'fileSize' => $metadata->Size]);
             } catch (AccessDenied $ex) {
                 Yii::$app->response->statusCode = 403;
+            } catch (NotFound $ex) {
+                Yii::$app->response->statusCode = 404;
             }
             return;
         }
@@ -163,7 +162,7 @@ class FileController extends Controller {
             Yii::$app->response->statusCode = 200;
             Yii::$app->response->content = "File deleted";
         }
-        catch(\InvalidArgumentException $ex) {
+        catch(NotFound $ex) {
             Yii::$app->response->statusCode = 404;
             Yii::$app->response->content = "File not found";
         }

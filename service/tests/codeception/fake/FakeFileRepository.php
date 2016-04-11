@@ -5,6 +5,7 @@ namespace tests\codeception\fake;
 use app\models\data\IFileRepository;
 use app\models\FileMetadata;
 use app\models\data\FileRepositoryFS;
+use app\models\data\NotFound;
 
 class FakeFileRepository implements IFileRepository {
 
@@ -61,7 +62,7 @@ class FakeFileRepository implements IFileRepository {
         if ($fileName === 'test2img' && $userId === 1) {
             throw new \app\models\data\AccessDenied();
         }
-        
+        throw new NotFound();        
     }
     
     public static function saveFileMetadata($metadata) {
@@ -80,6 +81,10 @@ class FakeFileRepository implements IFileRepository {
             case 2: return [];
             default: NULL;
         }
+    }
+    
+    public static function getFileStream($fileName, $userId) {
+        return NULL;
     }
     
     public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
@@ -101,7 +106,7 @@ class FakeFileRepository implements IFileRepository {
             throw new \app\models\data\AccessDenied();
         }
         
-        throw new \InvalidArgumentException();
+        throw new NotFound();
     }
 }
 

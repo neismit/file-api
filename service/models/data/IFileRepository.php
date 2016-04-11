@@ -27,13 +27,16 @@ interface IFileRepository {
      */
     public static function saveFileMetadata($metadata);
 
-        /**
+    /**
      * List of files by user
      * @param integer $userId
      * @return Array[string]|NULL
      */
     public static function getFilesMetadata($userId);
     
+    
+    public static function getFileStream($fileName, $userId);
+
     /**
      * Create file and metadata for file from stream.
      * It doesn't update the file. For updates, use updateFileFromStream
