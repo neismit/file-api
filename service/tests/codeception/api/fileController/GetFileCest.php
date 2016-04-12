@@ -13,16 +13,10 @@ class GetFileCest
 
     public function _before(ApiTester $I)
     {
-        $fullPath = File::getFullPathFile($this->testFileName);        
-        $handle = fopen($fullPath, 'w');
-        fwrite($handle, 'test text');
-        fflush($handle);
-        fclose($handle);
     }
 
     public function _after(ApiTester $I)
     {
-        unlink(File::getFullPathFile($this->testFileName));
     }
     
     /**
@@ -43,14 +37,14 @@ class GetFileCest
         $I->wantTo('GET file t1.txt');
         $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/file', ['name' => 't1.txt']);
+        $I->sendGET('api/v1/file', ['name' => $this->testFileName]);
 
         $I->wantTo('response 200, file, file metadata');
         $jsonMetadata = json_encode(
                 FakeFileRepository::getFileMetadata($this->testFileName, 1));
-        $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
         $I->seeResponseCodeIs(200);
-        $I->seeResponseContains('test text');
+        $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
+        $I->seeResponseContains('test string');
     }
     
     /**
@@ -71,7 +65,7 @@ class GetFileCest
         $I->wantTo('HEAD file t1.txt');
         $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendHEAD('api/v1/file?name=t1.txt'); 
+        $I->sendHEAD('api/v1/file?name=' . $this->testFileName); 
         // если в этот метод передавать запросы параметром, как в GET, он прикрепляет их в 
         // тело запроса, а не в url
         //, ['name' => 't1.txt']
@@ -79,7 +73,7 @@ class GetFileCest
         $I->wantTo('head, response 200, file metadata');
         $jsonMetadata = json_encode(
                 FakeFileRepository::getFileMetadata($this->testFileName, 1));
-        $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
         $I->seeResponseCodeIs(200);
+        $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
     }    
 }

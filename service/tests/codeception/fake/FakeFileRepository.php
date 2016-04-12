@@ -21,7 +21,7 @@ class FakeFileRepository implements IFileRepository {
                 'Size' => 24,
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
-                'Type' => 'text/plain',
+                'Type' => 'text//plain',
                 'Owner' => 1
             ]);
         }
@@ -90,7 +90,12 @@ class FakeFileRepository implements IFileRepository {
     }
     
     public static function getFileStream($fileName, $userId) {
-        return NULL;
+        if ($fileName === 't1.txt' && $userId === 1) {
+            $handle = fopen('php://memory', 'r+');
+            fwrite($handle, 'test string');
+            fseek($handle, 0);
+            return $handle;
+        }
     }
     
     public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {

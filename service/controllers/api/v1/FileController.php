@@ -64,13 +64,14 @@ class FileController extends Controller {
                 return;
             }
             return $metadataList;
-        } else {            
-            // не самое лучшее решение для быстродействия, но зато красивее
+        } else {
             try {
                 $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-                $fullPath = File::getFullPathFile($metadata->Name);
-                $fileHandler = File::getFileStream($fullPath);
+                Yii::error('metadata' . json_encode($metadata));
+                Yii::error("name: $name, userId: $userId");
+                $fileHandler = $this->fileRepository->getFileStream($name, $userId);
                 if (is_null($fileHandler)) {
+                    $fullPath = File::getFullPathFile($metadata->Name);
                     Yii::error($fullPath . ' - file not exist, metadata loaded');
                     Yii::$app->response->statusCode = 500;
                     return;
