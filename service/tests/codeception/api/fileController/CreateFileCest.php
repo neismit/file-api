@@ -37,6 +37,7 @@ class CreateFileCest
         //Здесь добавить аутентификацию по пользователю
         $pathToOriginFile = File::getFullPathFile($this->originFileName);
         $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Length', filesize($pathToOriginFile));
         $I->sendPUT('api/v1/file?name=' . $this->createdFileName, [], ['file' => $this->originFileName]);
         $I->wantTo('201');
@@ -56,6 +57,7 @@ class CreateFileCest
     public function testCreateFileMissingName (ApiTester $I) {
         $I->wantTo('400, missing name in request');
         $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->amBearerAuthenticated('test1-token');
         $I->sendPUT('api/v1/file');
         $I->wantTo('400, there is no option name');
         $I->seeResponseCodeIs(400);

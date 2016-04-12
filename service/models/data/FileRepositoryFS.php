@@ -64,8 +64,11 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     public static function getFileStream($fileName, $userId) {
         $pathToMetadata = File::getFullPathMetadata($fileName);
         $metadata = FileRepositoryFS::loadFileMetadata($pathToMetadata);
-        throw new \Exception();
-        $handle = fopen($filePath, 'r');
+        if ($metadata->Owner !== $userId) {
+            throw new AccessDenied();
+        }
+        $pathToFile = File::getFullPathFile($fileName);
+        $handle = fopen($pathToFile, 'r');
         return $handle;
     }
     

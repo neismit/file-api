@@ -15,7 +15,8 @@ interface IFileRepository {
      * Retrieves file metadata
      * @param string $fileName
      * @param integer $userId
-     * @return FileMetadata|NULL 
+     * @return FileMetadata|NULL
+     * @throws NotFound
      * @throws AccessDenied where user is't owner file
      */
     public static function getFileMetadata($fileName, $userId);
@@ -31,10 +32,18 @@ interface IFileRepository {
      * List of files by user
      * @param integer $userId
      * @return Array[string]|NULL
+     * @throws NotFound
      */
     public static function getFilesMetadata($userId);
     
-    
+    /**
+     * Return file stream, only read
+     * @param string $fileName
+     * @param integer $userId
+     * @return resource
+     * @throws NotFound
+     * @throws AccessDenied
+     */
     public static function getFileStream($fileName, $userId);
 
     /**
@@ -63,7 +72,7 @@ interface IFileRepository {
      * @param string $fileName
      * @param integer $userId
      * @return boolean
-     * @throws \InvalidArgumentException if file doesn't exist
+     * @throws NotFound if file doesn't exist
      */
     public static function deleteFile($fileName, $userId);
 }

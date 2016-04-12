@@ -31,11 +31,9 @@ class GetFileCest
      */
     public function getFileOnName500(ApiTester $I) {
         $I->wantTo('GET file t2');
-
-        //Здесь добавить аутентификацию по пользователю
-
+        $I->amBearerAuthenticated('test2-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('api/v1/file', ['name' => 't2']);
+        $I->sendGET('api/v1/file', ['name' => 'test2img']);
 
         $I->wantTo('response 500');
         $I->seeResponseCodeIs(500);
@@ -43,9 +41,7 @@ class GetFileCest
 
     public function getFileOnNameOk(ApiTester $I) {
         $I->wantTo('GET file t1.txt');
-
-        //Здесь добавить аутентификацию по пользователю
-
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('api/v1/file', ['name' => 't1.txt']);
 
@@ -63,9 +59,7 @@ class GetFileCest
      */
     public function getFileOnNameNotFound(ApiTester $I) {
         $I->wantTo('GET file 123 - not found');
-
-        //Здесь добавить аутентификацию по пользователю
-
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('api/v1/file', ['name' => '123']);
 
@@ -75,9 +69,7 @@ class GetFileCest
     
     public function headFileOnNameOk(ApiTester $I) {
         $I->wantTo('HEAD file t1.txt');
-
-        //Здесь добавить аутентификацию по пользователю
-
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendHEAD('api/v1/file?name=t1.txt'); 
         // если в этот метод передавать запросы параметром, как в GET, он прикрепляет их в 

@@ -33,8 +33,7 @@ class DeleteFileCest
     
     public function testDeleteFileOk(ApiTester $I) {
         $I->wantTo('DELETE file');
-
-        //Здесь добавить аутентификацию по пользователю
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('api/v1/file?name=' . $this->fileName);
         
@@ -45,7 +44,7 @@ class DeleteFileCest
     public function testDeleteFile404(ApiTester $I) {
         $I->wantTo('DELETE file, file does not exists');
 
-        //Здесь добавить аутентификацию по пользователю
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('api/v1/file?name=fakefile');
         
@@ -54,9 +53,9 @@ class DeleteFileCest
     }
     
     public function testDeleteFileAccessDenied(ApiTester $I) {
-        $I->wantTo('DELETE file test2img, userId = 1, access denied ');
+        $I->wantTo('DELETE file test2img (userId = 2), userId = 1, access denied ');
 
-        //Здесь добавить аутентификацию по пользователю
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('api/v1/file?name=test2img');
         

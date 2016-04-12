@@ -62,6 +62,9 @@ class FakeFileRepository implements IFileRepository {
         if ($fileName === 'test2img' && $userId === 1) {
             throw new \app\models\data\AccessDenied();
         }
+        if ($fileName === 'testEmptyMetadata' && $userId = 2) {
+            return NULL;
+        }
         throw new NotFound();        
     }
     
@@ -78,7 +81,10 @@ class FakeFileRepository implements IFileRepository {
                 $files[] = FakeFileRepository::getFileMetadata('test img', 1);
                 return $files;
             }
-            case 2: return [];
+            case 2: {
+                return FakeFileRepository::getFileMetadata('test2img', 2);
+            }
+            case 3: return [];
             default: NULL;
         }
     }

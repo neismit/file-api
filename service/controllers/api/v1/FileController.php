@@ -6,6 +6,9 @@ use Yii;
 use yii\web;
 use yii\web\Response;
 use yii\rest\Controller;
+use yii\filters\auth\HttpBearerAuth;
+use yii\filters\AccessControl;
+
 use app\models\data\IFileRepository;
 use app\models\data\AccessDenied;
 use app\models\data\NotFound;
@@ -18,6 +21,15 @@ use app\models\FileMetadata;
  * @author andrey
  */
 class FileController extends Controller {
+    
+    public function behaviors() {
+        $behaviors = parent::behaviors();
+        $behaviors['authenticator'] = [
+            'class' => HttpBearerAuth::className(),
+            'except' => ['options'],
+        ];
+        return $behaviors;
+    }
 
     private $fileRepository;
     
@@ -27,14 +39,11 @@ class FileController extends Controller {
         parent::__construct($id, $module, $config);
     }
 
-    public function actionOptions($name = NULL) {
+    public function actionOptions() {
         $response = Yii::$app->response;
         $response->statusCode = 200;
-        if (is_null($name)) {
-            $response->headers->add('Allow', 'OPTIONS, GET, HEAD');
-        } else {
-            $response->headers->add('Allow', 'OPTIONS, HEAD, GET, PUT, PATCH, DELETE');
-        }
+        
+        $response->headers->add('Allow', 'OPTIONS, HEAD, GET, PUT, PATCH, DELETE');
         return;
     }
 
@@ -46,7 +55,7 @@ class FileController extends Controller {
      */
     public function actionIndex($name = NULL)
     {
-        $userId = 1;
+        $userId = intval(Yii::$app->user->id);
         if (is_null($name)) {
             $metadataList = $this->fileRepository->getFilesMetadata($userId);
             Yii::$app->response->statusCode = 200;
@@ -92,7 +101,7 @@ class FileController extends Controller {
      */
     public function actionUpload($name = NULL, $overwrite = FALSE, $position = 0) {
         Yii::$app->request->enableCsrfValidation = false;
-        $userId = 1;
+        $userId = intval(Yii::$app->user->id);
         
         if (is_null($name)) {
             Yii::$app->response->statusCode = 400;
@@ -156,7 +165,7 @@ class FileController extends Controller {
     }
     
     public function actionDelete($name) {
-        $userId = 1;
+        $userId = intval(Yii::$app->user->id);
         try {
             $this->fileRepository->deleteFile($name, $userId);
             Yii::$app->response->statusCode = 200;

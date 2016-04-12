@@ -23,9 +23,7 @@ class FilesListCest
      */
     public function getFilesList(ApiTester $I) {
         $I->wantTo('get files list on user 1');
-
-        //Здесь добавить аутентификацию по пользователю
-        //$I->amHttpAuthenticated('service_user', '123456');
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('api/v1/file');
 
@@ -43,15 +41,17 @@ class FilesListCest
     }
     
     public function getEmptyFilesList(ApiTester $I) {
-        //$I->wantTo('get empty files list on user 5');
-        //throw new \Exception();
+        $I->wantTo('get empty files list on user 3');
+        $I->amBearerAuthenticated('test3-token');
+        $I->sendGET('api/v1/file');
+        $I->wantTo('get 200, empty list of metadata');
+        $I->seeResponseCodeIs(200);
+        $I->seeResponseContainsJson([]);        
     }
     
     public function headListFilesOnNameOk(ApiTester $I) {
         $I->wantTo('HEAD files');
-
-        //Здесь добавить аутентификацию по пользователю
-
+        $I->amBearerAuthenticated('test1-token');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendHEAD('api/v1/file'); 
 
