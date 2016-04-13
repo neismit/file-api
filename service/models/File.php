@@ -9,6 +9,12 @@ namespace app\models;
  */
 class File {
     
+    /**
+     * move to IFileRepository
+     * @deprecated 2016-04-12
+     * @param type $filePath
+     * @return type
+     */
     public static function getFileStream($filePath) {
         if (!file_exists($filePath)) {
             return NULL;

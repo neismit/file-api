@@ -32,6 +32,16 @@ class GetFileCest
         $I->wantTo('response 500');
         $I->seeResponseCodeIs(500);
     }
+    
+    public function getFileOnInvalidName(ApiTester $I) {
+        $I->wantTo('GET file t2*/sdf sl.txt');
+        $I->amBearerAuthenticated('test1-token');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendGET('api/v1/file', ['name' => 't2*/sdf sl.txt']);
+
+        $I->wantTo('response 400');
+        $I->seeResponseCodeIs(400);
+    }
 
     public function getFileOnNameOk(ApiTester $I) {
         $I->wantTo('GET file t1.txt');
@@ -75,5 +85,5 @@ class GetFileCest
                 FakeFileRepository::getFileMetadata($this->testFileName, 1));
         $I->seeResponseCodeIs(200);
         $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
-    }    
+    }
 }

@@ -30,6 +30,24 @@ class FileController extends Controller {
         ];
         return $behaviors;
     }
+    
+    public function beforeAction($action) {
+        $res = parent::beforeAction($action);
+        if (!$res) {
+            return $res;
+        }
+        $requestParams = Yii::$app->request->queryParams;
+        if (array_key_exists('name', $requestParams)) {
+            if (!$this->validateFileName($requestParams['name'])) {
+                $response = Yii::$app->response;
+                $response->statusCode = 400;
+                $response->statusText = 'Incorrect name parameter. Allow only eng/rus literal and number';
+                $response->send();
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
 
     private $fileRepository;
     
@@ -106,7 +124,8 @@ class FileController extends Controller {
         
         if (is_null($name)) {
             Yii::$app->response->statusCode = 400;
-            return "Missing 'name' parameter in request";
+            Yii::$app->response->statusText = "Missing 'name' parameter in request";
+            return;
         }
         
         $pathToFile = File::getFullPathFile($name);
@@ -126,7 +145,7 @@ class FileController extends Controller {
             }
             if (!$overwrite) {
                 Yii::$app->response->statusCode = 400;
-                Yii::$app->response->content = "Atempt to change existing file, but 'overwrite = false";
+                Yii::$app->response->statusText = "Atempt to change existing file, but 'overwrite = false";
                 return;
             }
             
@@ -134,10 +153,10 @@ class FileController extends Controller {
             $data = fopen("php://input", "r");
             if (is_null($data)) {
                 Yii::$app->response->statusCode = 204;
-                Yii::$app->response->content = "Atach a file to the request";
+                Yii::$app->response->statusText = "Atach a file to the request";
                 return;
             }
-            $resUpdate = $this->fileRepository->updateFileFromStream($data, $name, $position);
+            $resUpdate = $this->fileRepository->updateFileFromStream($data, $name, intval($position));
             if (!$resUpdate) {
                 Yii::error('actionUpload: file not update');
                 Yii::$app->response->statusCode = 500;
@@ -152,7 +171,7 @@ class FileController extends Controller {
         } else {
             if (\Yii::$app->request->isPatch) {
                 Yii::$app->response->statusCode = 400;
-                Yii::$app->response->content = "Atempt to create file with PATCH";
+                Yii::$app->response->statusText = "Atempt to create file with PATCH";
             }         
             //create file
             $data = fopen("php://input", "r");
@@ -183,12 +202,26 @@ class FileController extends Controller {
         return;
     }
 
-        /**
+    /**
      * Sets the header x-file-metadata
      * @param FileMetadata $metadata
      */
     private function setMetadataHeader($metadata) {
         $header = Yii::$app->response->headers;
         $header->add('x-file-metadata', json_encode($metadata));
+    }
+    
+    /**
+     * Checks the file name on invalid symbols
+     * Allow: end/rus symbols, 0-9, space, -, _, .
+     * @param string $fileName
+     * @return boolean
+     */
+    private function validateFileName($fileName) {
+        $res = preg_match('/[-_0-9a-zа-я\., ]+/i', $fileName, $mathes);
+        if ($res && count($mathes) > 0) {
+            return $fileName === array_shift($mathes);
+        }
+        return FALSE;
     }
 }
