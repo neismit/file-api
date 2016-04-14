@@ -31,5 +31,5 @@ class File {
     public static function getFullPathFile($fileName) {
         $dir = \Yii::$app->params['dataFolder'];
         return $dir . '/' . $fileName;
-    }
+    }            
 }

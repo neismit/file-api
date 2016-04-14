@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\codeception\unit\models\data;
+namespace tests\codeception\unit\models\data\FileRepositoryFS;
 
 use Yii;
 use yii\codeception\TestCase;
@@ -9,7 +9,7 @@ use app\models\File;
 use app\models\data\FileRepositoryFS;
 use tests\codeception\fake\FakeFileRepository;
 
-class FileRepositoryFSTest extends TestCase
+class FileRepositoryFSMetadataTest extends TestCase
 {
     use Specify;
     

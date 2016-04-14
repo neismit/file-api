@@ -89,7 +89,7 @@ class FakeFileRepository implements IFileRepository {
         }
     }
     
-    public static function getFileStream($fileName, $userId) {
+    public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0) {
         if ($fileName === 't1.txt' && $userId === 1) {
             $handle = fopen('php://memory', 'r+');
             fwrite($handle, 'test string');
@@ -98,12 +98,12 @@ class FakeFileRepository implements IFileRepository {
         }
     }
     
-    public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024) {
-        return FileRepositoryFS::createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead);
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE) {
+        return FileRepositoryFS::createFileFromStream($inputFileHandler, $fileName, $userId, $compression);
     }
 
-    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014) {
-        return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $startPosition, $blockSizeForRead);
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE, $startPosition = 0) {
+        return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $userId, $compression, $startPosition);
     }
     
     public static function deleteFile($fileName, $userId) {

@@ -40,32 +40,39 @@ interface IFileRepository {
      * Return file stream, only read
      * @param string $fileName
      * @param integer $userId
+     * @param boolean $compression TRUE for returns compressed stream
+     * @param integer $position position in file
+     * @param integer $length length return content
      * @return resource
      * @throws NotFound
      * @throws AccessDenied
      */
-    public static function getFileStream($fileName, $userId);
+    public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0);
 
     /**
      * Create file and metadata for file from stream.
      * It doesn't update the file. For updates, use updateFileFromStream
      * @param resource $inputFileHandler
      * @param string $fileName
-     * @param integer $blockSizeForRead
-     * @return boolean
+     * @param integer $userId
+     * @param boolean $compression if $inputFileHandler is contains compressed stream
+     * @return app\models\FileMetadata | NULL
      */
-    public static function createFileFromStream($inputFileHandler, $fileName, $blockSizeForRead = 1024);
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE);
     
     /**
      * Update the file from strem, 
      * @param resource $inputFileHandler
      * @param string $fileName
-     * @param integer $startPosition
-     * @param integer $blockSizeForRead
-     * @return boolean
-     * @throws \InvalidArgumentException
+     * @param integer $userId
+     * @param boolean $compression if $inputFileHandler is contains compressed stream
+     * @param integer $startPosition position in existing file for write data from $inputFileHandler
+     * @return app\models\FileMetadata
+     * @throws \InvalidArgumentException if startPosition not int or more than file size
+     * @throws NotFound
+     * @throws AccessDenied
      */
-    public static function updateFileFromStream($inputFileHandler, $fileName, $startPosition = 0, $blockSizeForRead = 1014);
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE, $startPosition = 0);
     
     /**
      * Deletes the file and metadata file

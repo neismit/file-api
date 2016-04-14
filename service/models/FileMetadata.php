@@ -12,7 +12,13 @@ use app\models\File;
  */
 class FileMetadata extends Model {
     
-    /**
+    public function __construct($config = array()) {
+        $this->Created = (new \DateTime('now'))->format(\DateTime::ISO8601);
+        $this->Modified = $this->Created;
+        parent::__construct($config);
+    }
+
+        /**
      * File name
      * @var string 
      */
@@ -20,6 +26,7 @@ class FileMetadata extends Model {
     
     /**
      * File size in bytes
+     * ToDo: This is compressed file size
      * @var integer 
      */
     public $Size;
@@ -49,6 +56,7 @@ class FileMetadata extends Model {
     public $Type;
     
     /**
+     * @deprecated 2016-04-13 Metadata created in IFileRepository/createFileFromStream
      * Create metadate from file
      * @param string $fileName
      * @param string $type Mime file type
@@ -56,7 +64,7 @@ class FileMetadata extends Model {
      * @return \app\models\FileMetadata
      * @throws \InvalidArgumentException if the file doesn't exist
      */
-    public static function createMetadata($fileName, $userId) {
+    public static function createMetadata($fileName, $userId, $size, $mimeType) {
         $fullPathFile = File::getFullPathFile($fileName);
         if (!file_exists($fullPathFile)) {
             throw new \InvalidArgumentException();
@@ -68,16 +76,31 @@ class FileMetadata extends Model {
         $metadata->Modified = $metadata->Created;
         $metadata->Owner = $userId;
         
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $fullPathFile);
-        finfo_close($finfo);
-        $metadata->Type = $mimeType;
+//        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+//        $mimeType = finfo_file($finfo, $fullPathFile);
+//        finfo_close($finfo);
+        $metadata->Type = FileMetadata::getMimeType($fullPathFile);
         return $metadata;
     }
     
-    public function update() {
+    /**
+     * @deprecated 2016-04-13 Metadata created in IFileRepository/createFileFromStream
+     * 
+     */
+    private static function getMimeType($pathToFile) {
+        $handle = fopen($pathToFile, 'rb');
+        $params = \Yii::$app->params['compressionParameters'];
+        stream_filter_append($handle, 'zlib.inflate', STREAM_FILTER_READ, $params);        
+        
+        $str = fgets($handle, 100);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $type = $finfo->buffer($str);
+        fclose($handle);
+        return $type;
+    }
+    
+    public function update($size) {
         $this->Modified = (new \DateTime('now'))->format(\DateTime::ISO8601);
-        assert('!is_null($this->Name)', 'FileMetadata: Name is null!');
-        $this->Size = filesize(File::getFullPathFile($this->Name));
+        $this->Size = $size;
     }
 }

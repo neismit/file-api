@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\codeception\unit\models\data;
+namespace tests\codeception\unit\models\data\FileRepositoryFS;
 
 use Yii;
 use yii\codeception\TestCase;
@@ -10,7 +10,7 @@ use app\models\data\FileRepositoryFS;
 use app\models\FileMetadata;
 use tests\codeception\helper\FileHelper;
 
-class FileRepositoryFSDeleteTest extends TestCase
+class DeleteTest extends TestCase
 {
     use Specify;
     
