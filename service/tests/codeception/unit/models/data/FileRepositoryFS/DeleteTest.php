@@ -9,6 +9,7 @@ use app\models\File;
 use app\models\data\FileRepositoryFS;
 use app\models\FileMetadata;
 use tests\codeception\helper\FileHelper;
+use tests\codeception\fake\FakeFileRepository;
 
 class DeleteTest extends TestCase
 {
@@ -26,7 +27,8 @@ class DeleteTest extends TestCase
         parent::setUp();
         $fullPathToFile = File::getFullPathFile($this->fileName);
         FileHelper::createFile($fullPathToFile, 'content');
-        $metadata = FileMetadata::createMetadata($this->fileName, 1);
+        $metadata = FakeFileRepository::getFileMetadata('t1.txt', 1);
+        $metadata->Name = $this->fileName;
         FileRepositoryFS::saveFileMetadata($metadata);
     }
     
@@ -61,11 +63,21 @@ class DeleteTest extends TestCase
     }
     
     /**
-     * Testing delete file
+     * Testing delete file, Access denied
      * @expectedException app\models\data\AccessDenied
      */
     public function testDeleteFileAccessDenied() {
         FileRepositoryFS::deleteFile($this->fileName, 2);
+    }    
+    
+       /**
+     * Testing delete file
+     * @expectedException \app\models\data\NotFound
+     */
+    public function testDeleteFileNotFoundMetadatas() {
+        $pathToMetadata = File::getFullPathMetadata($this->fileName);
+        unlink($pathToMetadata);
+        FileRepositoryFS::deleteFile($this->fileName, 1);
     }    
 }
     

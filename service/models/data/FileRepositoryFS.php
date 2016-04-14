@@ -192,7 +192,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     
     public static function deleteFile($fileName, $userId) {
         $path = File::getFullPathFile($fileName);
-        if (!file_exists($filename)) {
+        if (!file_exists($path)) {
             throw new NotFound();
         }
         $metadata = FileRepositoryFS::getFileMetadata($fileName, $userId);
