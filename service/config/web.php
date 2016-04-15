@@ -61,7 +61,7 @@ $config = [
                     'patterns' => [
                         'OPTIONS' => 'options',
                         'GET,HEAD' => 'index', 
-                        'PUT' => 'upload',
+                        'PUT,PATCH' => 'upload',
                         'DELETE ' => 'delete',
                     ],
 //                    'extraPatterns' => [

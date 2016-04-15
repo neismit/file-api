@@ -27,4 +27,16 @@ class FileHelper {
         }
     }
     
+    /**
+     * Tmp file in memory
+     * @param string $content
+     * @return resource
+     */
+    public static function createFileInMemory($content) {
+        $inputFileHandler = fopen('php://memory', 'r+');
+        fwrite($inputFileHandler, $content);
+        fseek($inputFileHandler, 0);
+        return $inputFileHandler;
+    }
+    
 }

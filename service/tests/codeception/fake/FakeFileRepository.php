@@ -21,7 +21,7 @@ class FakeFileRepository implements IFileRepository {
                 'Size' => 24,
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
-                'Type' => 'text//plain',
+                'Type' => 'text/plain; charset=us-ascii',
                 'Owner' => 1
             ]);
         }
@@ -31,7 +31,7 @@ class FakeFileRepository implements IFileRepository {
                 'Size' => 17,
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
-                'Type' => 'text/plain',
+                'Type' => 'text/plain; charset=us-ascii',
                 'Owner' => 1
             ]);
         }
@@ -90,19 +90,20 @@ class FakeFileRepository implements IFileRepository {
     }
     
     public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0) {
-        if ($fileName === 't1.txt' && $userId === 1) {
-            if($compression) {
-                $handle = gzopen('php://memory', 'r+');
-                gzwrite($handle, 'test string');
-                gzseek($handle, 0);
-                return $handle;
-            } else {
-                $handle = fopen('php://memory', 'r+');
-                fwrite($handle, 'test string');
-                fseek($handle, 0);
-                return $handle;
-            }
-        }
+        return FileRepositoryFS::getFileStream($fileName, $userId, $compression, $position, $length);
+//        if ($fileName === 't1.txt' && $userId === 1) {
+//            if($compression) {
+//                $handle = gzopen('php://memory', 'w+');
+//                gzwrite($handle, 'test string');
+//                gzseek($handle, 0);
+//                return $handle;
+//            } else {
+//                $handle = fopen('php://memory', 'r+');
+//                fwrite($handle, 'test string');
+//                fseek($handle, 0);
+//                return $handle;
+//            }
+//        }
     }
     
     public static function createFileFromStream($inputFileHandler, $fileName, $userId) {

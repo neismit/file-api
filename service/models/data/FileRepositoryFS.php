@@ -179,49 +179,6 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         FileRepositoryFS::saveFileMetadata($metadata);
         
         return $metadata;
-//        $savedFileHandler = fopen($pathToFile, 'rb');
-//        StreamHelper::atachDecompressionFilter($savedFileHandler);
-//        // create tmp stream from exist file
-//        $maxMemory = \Yii::$app->params['tempMaxmemory'];
-//        $tmpStream = fopen("php://temp/maxmemory:$maxMemory", 'r+');
-//        $blockSizeForRead = \Yii::$app->params['blockSize'];
-//        // extract saved file
-//        while ($data = fread($savedFileHandler, $blockSizeForRead)) {
-//            fwrite($tmpStream, $data);
-//        }
-//        fclose($savedFileHandler);
-//                       
-//        if ($startPosition > $metadata->Size) {
-//            throw new \InvalidArgumentException();
-//        }
-        
-        // update tmp stream
-//        fseek($tmpStream, $startPosition);
-//        
-//        if ($compression) {
-//            StreamHelper::atachDecompressionFilter($inputFileHandler);
-//        }        
-//        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
-//            fwrite($tmpStream, $data);
-//        }
-//        fclose($inputFileHandler);
-        // update metadata
-//        $stat = fstat($tmpStream);
-//        $metadata->update($stat['size']);
-//        FileRepositoryFS::saveFileMetadata($metadata);
-//        
-//        // write updated file
-//        fseek($tmpStream, 0);
-//        $updateFile = fopen($pathToFile, 'wb');
-//        StreamHelper::atachCompressionFilter($updateFile);
-//        while ($data = fread($tmpStream, $blockSizeForRead)) {
-//            fwrite($updateFile, $data);
-//        }
-//        fclose($tmpStream);
-//        fflush($updateFile);
-//        fclose($updateFile);
-//        
-//        return $metadata;
     }
     
     public static function deleteFile($fileName, $userId) {

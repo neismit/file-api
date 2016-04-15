@@ -65,16 +65,19 @@ class FileController extends Controller {
         return;
     }
 
-        /**
+    /**
      * GET Files list
      * GET with $name return File and metadata in header x-file-metadata
      * HEAD with name send only metadata in header (x-file-metadata) response
      * @param string $name File name
+     * @param integer $position position in file
+     * @param integer $length length get content
      */
-    public function actionIndex($name = NULL)
+    public function actionIndex($name = NULL, $position = 0, $length = 0)
     {
         $userId = intval(Yii::$app->user->id);
-        if (is_null($name)) {
+        // get list file
+        if (is_null($name) || empty(trim($name))) {
             $metadataList = $this->fileRepository->getFilesMetadata($userId);
             Yii::$app->response->statusCode = 200;
             if (Yii::$app->request->isHead) {
@@ -82,34 +85,33 @@ class FileController extends Controller {
                 return;
             }
             return $metadataList;
-        } else {
-            try {
-                $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-                Yii::error('metadata' . json_encode($metadata));
-                Yii::error("name: $name, userId: $userId");
-                $fileHandler = $this->fileRepository->getFileStream($name, $userId);
-                if (is_null($fileHandler)) {
-                    $fullPath = File::getFullPathFile($metadata->Name);
-                    Yii::error($fullPath . ' - file not exist, metadata loaded');
-                    Yii::$app->response->statusCode = 500;
-                    return;
-                }
-                $this->setMetadataHeader($metadata);
-                if (Yii::$app->request->isHead) {
-                    // send only metadata in header
-                    Yii::$app->response->statusCode = 200;
-                    return;
-                }
+        } 
+        try {
+            $metadata = $this->fileRepository->getFileMetadata($name, $userId);
 
-                Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
-                    ['mimeType' => $metadata->Type, 'fileSize' => $metadata->Size]);
-            } catch (AccessDenied $ex) {
-                Yii::$app->response->statusCode = 403;
-            } catch (NotFound $ex) {
-                Yii::$app->response->statusCode = 404;
+            $this->setMetadataHeader($metadata);
+            if (Yii::$app->request->isHead) {
+                // send only metadata in header
+                Yii::$app->response->statusCode = 200;
+                return;
             }
-            return;
+            $fileHandler = $this->fileRepository->getFileStream($name, $userId, $this->isAllowGzipResponse());
+            $sizeContent = $metadata->Size;
+            Yii::error('!gzip: ' . $this->isAllowGzipResponse());
+            if ($this->isAllowGzipResponse()) {
+                $this->setGzipCompressionHeader();
+                $stat = fstat($fileHandler);
+                $sizeContent = $stat['size'];
+            }
+
+            Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
+                ['mimeType' => $metadata->Type, 'fileSize' => $sizeContent]);
+        } catch (AccessDenied $ex) {
+            Yii::$app->response->statusCode = 403;
+        } catch (NotFound $ex) {
+            Yii::$app->response->statusCode = 404;
         }
+        return;
     }
     
     /**
@@ -118,70 +120,49 @@ class FileController extends Controller {
      * @param boolean $overwrite - overwrite exist file
      * @param integer $position - request of write data to an existing file with $position
      */
-    public function actionUpload($name = NULL, $overwrite = FALSE, $position = 0) {
+    public function actionUpload($name = NULL, $position = 0) {
         Yii::$app->request->enableCsrfValidation = false;
         $userId = intval(Yii::$app->user->id);
         
-        if (is_null($name)) {
-            Yii::$app->response->statusCode = 400;
-            Yii::$app->response->statusText = "Missing 'name' parameter in request";
+        if (is_null($name) || empty($name)) {
+            \Yii::$app->response->statusCode = 400;
+            \Yii::$app->response->statusText = 'Missing \'name\' parameter';
             return;
         }
-        
         $pathToFile = File::getFullPathFile($name);
-        if (file_exists($pathToFile)) {
-            $metadata = $this->fileRepository->getFileMetadata($name, $userId);
-            if (is_null($metadata)) {
-                Yii::error('actionUpload: $metadata is null for file: ' . $pathToFile);
-                // clear file
-                $this->fileRepository->deleteFile(); // not implement
-                Yii::$app->response->statusCode = 500;
-                return;
-            }
-            if ($metadata->Owner !== $userId) {
-                Yii::warning('actionCreate: Access denied. file: ' . $pathToFile . ' userId: ' . $userId);
-                Yii::$app->response->statusCode = 403;
-                return;
-            }
-            if (!$overwrite) {
-                Yii::$app->response->statusCode = 400;
-                Yii::$app->response->statusText = "Atempt to change existing file, but 'overwrite = false";
-                return;
-            }
-            
-            // rewrite file
-            $data = fopen("php://input", "r");
-            if (is_null($data)) {
-                Yii::$app->response->statusCode = 204;
-                Yii::$app->response->statusText = "Atach a file to the request";
-                return;
-            }
-            $resUpdate = $this->fileRepository->updateFileFromStream($data, $name, intval($position));
-            if (!$resUpdate) {
-                Yii::error('actionUpload: file not update');
-                Yii::$app->response->statusCode = 500;
-                return;
-            }
-            clearstatcache();
-            $metadata->update();                
-            $this->fileRepository->saveFileMetadata($metadata);
-            $this->setMetadataHeader($metadata);
-            Yii::$app->response->statusCode = 200;
-            return;
-        } else {
+        if (!file_exists($pathToFile)) {            
             if (\Yii::$app->request->isPatch) {
-                Yii::$app->response->statusCode = 400;
-                Yii::$app->response->statusText = "Atempt to create file with PATCH";
-            }         
+                \Yii::$app->response->statusCode = 400;
+                \Yii::$app->response->statusText = "Atempt to create file with PATCH";
+                return;
+            }
             //create file
-            $data = fopen("php://input", "r");
-            $this->fileRepository->createFileFromStream($data, $name);
-            $metadata = FileMetadata::createMetadata($name, $userId);
-            $this->fileRepository->saveFileMetadata($metadata);
+            $dataStream = $this->getFileContentStream($this->haveGzipContent());
+            $metadata = $this->fileRepository->createFileFromStream($dataStream, $name, $userId);
+            if (is_null($metadata)) {
+                Yii::$app->response->statusCode = 500;
+                return;
+            }
             $this->setMetadataHeader($metadata);
             Yii::$app->response->statusCode = 201;
             return;
         }
+        // update file
+        $data = $this->getFileContentStream($this->haveGzipContent());
+        // if request is put and file exist, overwrite file
+        $overwriteFile = Yii::$app->request->isPut;
+        try {
+            $metadata = $this->fileRepository->updateFileFromStream($data, $name, $userId, $overwriteFile, intval($position));
+            $this->setMetadataHeader($metadata);
+            Yii::$app->response->statusCode = 200;
+        } catch (AccessDenied $ex) {
+            Yii::warning('actionUpdate: Access denied. file: ' . $name . ' userId: ' . $userId);
+            Yii::$app->response->statusCode = 403;
+        } catch (\InvalidArgumentException $ex) {
+            Yii::$app->response->statusCode = 400;
+            Yii::$app->response->statusText = "Position isn't int or more than the file size";
+        }
+        return; 
     }
     
     public function actionDelete($name) {
@@ -189,14 +170,14 @@ class FileController extends Controller {
         try {
             $this->fileRepository->deleteFile($name, $userId);
             Yii::$app->response->statusCode = 200;
-            Yii::$app->response->content = "File deleted";
+            Yii::$app->response->statusText = "File deleted";
         }
         catch(NotFound $ex) {
             Yii::$app->response->statusCode = 404;
-            Yii::$app->response->content = "File not found";
+            Yii::$app->response->statusText = "File not found";
         }
         catch (AccessDenied $ex) {
-            Yii::warning('actionCreate: Access denied. file: ' . $name . ' userId: ' . $userId);
+            Yii::warning('actionDelete: Access denied. file: ' . $name . ' userId: ' . $userId);
             Yii::$app->response->statusCode = 403;
         }
         return;
@@ -208,7 +189,7 @@ class FileController extends Controller {
      */
     private function setMetadataHeader($metadata) {
         $header = Yii::$app->response->headers;
-        $header->add('x-file-metadata', json_encode($metadata));
+        $header->add('X-File-Metadata', json_encode($metadata));
     }
     
     /**
@@ -218,10 +199,57 @@ class FileController extends Controller {
      * @return boolean
      */
     private function validateFileName($fileName) {
+        // ToDo: допускает строку из пробелов, точек, запятых, -, _
         $res = preg_match('/[-_0-9a-zа-я\., ]+/i', $fileName, $mathes);
         if ($res && count($mathes) > 0) {
             return $fileName === array_shift($mathes);
         }
         return FALSE;
+    }
+    
+    /**
+     * Check allow gzip respose
+     * @return boolean
+     */
+    private function isAllowGzipResponse() {
+        $requestHeaders = \Yii::$app->request->headers;
+        if (!$requestHeaders->has('accept-encoding')) {
+            return FALSE;
+        }
+        $acceptEncoding = $requestHeaders->get('accept-encoding');
+        return stripos($acceptEncoding, 'gzip') !== FALSE;
+    }
+    
+    /**
+     * Set the gzip content-encoding in response header
+     */
+    private function setGzipCompressionHeader() {
+        \Yii::$app->response->headers->set('Content-Encoding', 'gzip');
+    }
+    
+    /**
+     * Check is content gzip
+     * @return boolean
+     */
+    private function haveGzipContent() {
+        $requestHeaders = \Yii::$app->response->headers;
+        if (!$requestHeaders->has('content-encoding')) {
+            return FALSE;
+        }
+        $contentEncoding = $requestHeaders->get('content-encoding');
+        return stripos($contentEncoding, 'gzip') !== FALSE;
+    }
+    
+    /**
+     * Get a file content strem from request
+     * @param boolean $contentIsGzip
+     * @return resource
+     */
+    private function getFileContentStream($contentIsGzip) {
+        if ($contentIsGzip) {
+            return gzopen("php://input", "rb");
+        } else {
+            return fopen("php://input", "r");
+        }
     }
 }
