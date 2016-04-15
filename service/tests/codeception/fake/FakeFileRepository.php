@@ -91,19 +91,26 @@ class FakeFileRepository implements IFileRepository {
     
     public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0) {
         if ($fileName === 't1.txt' && $userId === 1) {
-            $handle = fopen('php://memory', 'r+');
-            fwrite($handle, 'test string');
-            fseek($handle, 0);
-            return $handle;
+            if($compression) {
+                $handle = gzopen('php://memory', 'r+');
+                gzwrite($handle, 'test string');
+                gzseek($handle, 0);
+                return $handle;
+            } else {
+                $handle = fopen('php://memory', 'r+');
+                fwrite($handle, 'test string');
+                fseek($handle, 0);
+                return $handle;
+            }
         }
     }
     
-    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE) {
-        return FileRepositoryFS::createFileFromStream($inputFileHandler, $fileName, $userId, $compression);
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId) {
+        return FileRepositoryFS::createFileFromStream($inputFileHandler, $fileName, $userId);
     }
 
-    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE, $startPosition = 0) {
-        return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $userId, $compression, $startPosition);
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $overwriteAllFile = FALSE, $startPosition = 0) {
+        return FileRepositoryFS::updateFileFromStream($inputFileHandler, $fileName, $userId, $overwriteAllFile = FALSE, $startPosition);
     }
     
     public static function deleteFile($fileName, $userId) {

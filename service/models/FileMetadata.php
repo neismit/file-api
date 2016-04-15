@@ -99,8 +99,16 @@ class FileMetadata extends Model {
         return $type;
     }
     
-    public function update($size) {
+    /**
+     * Update metadata when file changed
+     * @param integer $size
+     * @param string|NULL $mimeType
+     */
+    public function update($size, $mimeType = NULL) {
         $this->Modified = (new \DateTime('now'))->format(\DateTime::ISO8601);
         $this->Size = $size;
+        if (!is_null($mimeType)) {
+            $this->Type = $mimeType;
+        }
     }
 }

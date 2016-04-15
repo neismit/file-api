@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\codeception\unit\models\data;
+namespace tests\codeception\unit\models\data\fileRepositoryFS;
 
 use Yii;
 use yii\codeception\TestCase;
@@ -53,8 +53,6 @@ class UpdateFileTest extends TestCase
 
     
     public function testUpdateFileFormStreamOk() {
-        $pathToOriginFile = File::getFullPathFile($this->fileName);
-        
         $metadata = $this->metadata;
         // change data for testing purpose
         $dateCreate = new \DateTime('now');
@@ -65,10 +63,10 @@ class UpdateFileTest extends TestCase
         FileRepositoryFS::saveFileMetadata($metadata);
         
         $pathToFileData = File::getFullPathFile($this->fileWithData);
-        $handle = fopen($pathToFileData, 'r');
+        $handle = gzopen($pathToFileData, 'rb');
         
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, TRUE, $metadata->Size);
-        fclose($handle);
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, FALSE, $metadata->Size);
+        gzclose($handle);
         
         // check metadata
         $this->assertEquals($metadata->Created, $updateMetadata->Created);
@@ -90,20 +88,57 @@ class UpdateFileTest extends TestCase
         $this->assertEquals('test append text', $str);
     }
     
+    public function testOverwriteFileOk() {        
+        $metadata = $this->metadata;
+        // change data for testing purpose
+        $dateCreate = new \DateTime('now');
+        $dateCreate->setDate(2015, 1, 1);
+        $dateCreateString = $dateCreate->format(\DateTime::ISO8601);
+        $metadata->Created = $dateCreateString;
+        $metadata->Modified = $dateCreateString;
+        FileRepositoryFS::saveFileMetadata($metadata);
+        
+        $pathToFileData = File::getFullPathFile($this->fileWithData);
+        $handle = gzopen($pathToFileData, 'rb');
+        
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, TRUE);
+        gzclose($handle);
+        
+        // check metadata
+        $this->assertEquals($metadata->Created, $updateMetadata->Created);
+        $this->assertNotEquals($metadata->Modified, $updateMetadata->Modified);
+        
+        $dateUpdate = new \DateTime('now');
+        $dateUpdateString = $dateUpdate->format(\DateTime::ISO8601);
+        $this->assertEquals($dateUpdateString, $updateMetadata->Modified);
+        
+        $this->assertEquals($metadata->Name, $updateMetadata->Name);
+        $this->assertEquals($metadata->Owner, $updateMetadata->Owner);
+        $this->assertNotEquals($metadata->Size, $updateMetadata->Size);
+        $this->assertEquals(12, $updateMetadata->Size);
+        // check file content
+        $handleUpdated = FileRepositoryFS::getFileStream($this->fileName, 1, FALSE);
+        $str = fgets($handleUpdated);
+        fclose($handleUpdated);
+        
+        $this->assertEquals(' append text', $str);
+    }
+
+
     /**
      * @expectedException \InvalidArgumentException
      */
     public function testUpdateFileFormStreamParameterIsString() {
         $handle = fopen('php://temp', 'r+');
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, TRUE, 'fa123');
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, FALSE, 'fa123');
     }
     
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testUpdateFileFormStreamParameterMoThanFileSize() {
+    public function testUpdateFileFormStreamPositionMoreThanFileSize() {
         $handle = fopen('php://temp', 'r+');
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, TRUE, 10000);
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 1, FALSE, 10000);
     }
     
     /**
@@ -111,7 +146,7 @@ class UpdateFileTest extends TestCase
      */
     public function testUpdateFileFormStreamParameterNotFoundFile() {
         $handle = fopen('php://temp', 'r+');
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, '111', 1, TRUE, 4);
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, '111', 1, FALSE, 4);
     }
     
     /**
@@ -120,7 +155,7 @@ class UpdateFileTest extends TestCase
     public function testUpdateFileFormStreamParameterNotFoundMetadata() {
         unlink(File::getFullPathMetadata($this->fileName));
         $handle = fopen('php://temp', 'r+');
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, '111', 1, TRUE, 4);
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, '111', 1, FALSE, 4);
     }
     
     /**
@@ -128,6 +163,6 @@ class UpdateFileTest extends TestCase
      */
     public function testUpdateFileFormStreamParameterAccesDenied() {
         $handle = fopen('php://temp', 'r+');
-        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 2, TRUE, 4);
+        $updateMetadata = FileRepositoryFS::updateFileFromStream($handle, $this->fileName, 2, FALSE, 4);
     }
 }

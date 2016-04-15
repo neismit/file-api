@@ -2,8 +2,6 @@
 
 namespace tests\codeception\helper;
 
-use app\models\StreamHelper;
-
 /**
  * Help do file operation
  *
@@ -18,13 +16,15 @@ class FileHelper {
      * @param boolean $compression
      */
     public static function createFile($fullPathToFile, $content, $compression = TRUE) {
-        $handle = fopen($fullPathToFile, 'wb');
         if ($compression) {
-            StreamHelper::atachCompressionFilter($handle);        
+            $handle = gzopen($fullPathToFile, 'wb' . \Yii::$app->params['compressionLevel']);
+            gzwrite($handle, $content);
+            gzclose($handle);
+        } else {
+            $handle = fopen($fullPathToFile, 'wb');
+            fwrite($handle, $content);
+            fclose($handle);
         }
-        fwrite($handle, $content);
-        fflush($handle);
-        fclose($handle);
     }
     
 }

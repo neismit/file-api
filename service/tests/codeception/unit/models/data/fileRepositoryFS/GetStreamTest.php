@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\codeception\unit\models\data\FileRepositoryFS;
+namespace tests\codeception\unit\models\data\fileRepositoryFS;
 
 use Yii;
 use yii\codeception\TestCase;

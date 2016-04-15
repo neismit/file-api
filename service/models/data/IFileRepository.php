@@ -55,24 +55,23 @@ interface IFileRepository {
      * @param resource $inputFileHandler
      * @param string $fileName
      * @param integer $userId
-     * @param boolean $compression if $inputFileHandler is contains compressed stream
      * @return app\models\FileMetadata | NULL
      */
-    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE);
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId);
     
     /**
      * Update the file from strem, 
      * @param resource $inputFileHandler
      * @param string $fileName
      * @param integer $userId
-     * @param boolean $compression if $inputFileHandler is contains compressed stream
-     * @param integer $startPosition position in existing file for write data from $inputFileHandler
+     * @param boolean $overwriteAllFile If TRUE overwrite an existing file from $inputFileHandler, $startPosition ingored
+     * @param integer $startPosition position in existing file for write data from $inputFileHandler, ignored when $overwriteAllFile = TRUE
      * @return app\models\FileMetadata
      * @throws \InvalidArgumentException if startPosition not int or more than file size
      * @throws NotFound
      * @throws AccessDenied
      */
-    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE, $startPosition = 0);
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $overwriteAllFile = TRUE, $startPosition = 0);
     
     /**
      * Deletes the file and metadata file

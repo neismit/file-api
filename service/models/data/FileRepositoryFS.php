@@ -5,7 +5,6 @@ namespace app\models\data;
 use app\models\data\IFileRepository;
 use app\models\File;
 use app\models\FileMetadata;
-use app\models\StreamHelper;
 
 class FileRepositoryFS implements \app\models\data\IFileRepository {
     
@@ -63,14 +62,36 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
             throw new AccessDenied();
         }
         $pathToFile = File::getFullPathFile($fileName);
-        $handle = fopen($pathToFile, 'r');
-        if (!$compression) {
-            StreamHelper::atachDecompressionFilter($handle);
-        }
-        return $handle;
+        $handle = NULL;
+        // return the full file
+//        if ($position === 0 && $length === 0) {
+            if ($compression) {
+                $handle = fopen($pathToFile, 'rb');
+            } else {
+                $handle = gzopen($pathToFile, 'rb');
+            }
+            return $handle;
+//        }
+        //ToDo:
+        // return part of the file
+//        if ($position + $length > $metadata->Size) {
+//            throw new \InvalidArgumentException();
+//        }
+//        $handle = gzopen($pathToFile, 'rb');
+//        $maxMemory = \Yii::$app->params['tempMaxmemory'];
+//        $tmpPartFile = fopen("php://temp/maxmemory:$maxMemory", 'r+b');
+//        stream_copy_to_stream($handle, $tmpPartFile, $length, $position);
+//        gzclose($handle);
+//        if (!$compression) {
+//            fseek($tmpPartFile, 0);
+//            return $tmpPartFile;
+//        }
+//        
+//                
+//        return NULL;
     }
     
-    public static function createFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE) {
+    public static function createFileFromStream($inputFileHandler, $fileName, $userId) {
         //ToDo: pass empty string
         assert('!is_null($inputFileHandler) || !empty($inputFileHandler)', 
                 'createFileFormStream, inputFileHandler in null');
@@ -81,33 +102,17 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         $metadata->Name = $fileName;
         $metadata->Owner = $userId;
         
-        $blockSizeForRead = \Yii::$app->params['blockSize'];
-        // read input stream in tmp
-        $maxMemory = \Yii::$app->params['tempMaxmemory'];
-        $tmpStream = fopen("php://temp/maxmemory:$maxMemory", 'r+');
-        if ($compression) {
-            StreamHelper::atachDecompressionFilter($inputFileHandler);
-        }
-        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
-            fwrite($tmpStream, $data);           
-        }
-//        fclose($inputFileHandler);
-        $stat = fstat($tmpStream);
-        $metadata->Size = $stat['size'];
-        $metadata->Type = FileRepositoryFS::getMimeType($tmpStream);
-        
-        fseek($tmpStream, 0);
-        
         $pathToFile = File::getFullPathFile($fileName);
-        $saveFileHandler = fopen($pathToFile, 'w');
-
-        StreamHelper::atachCompressionFilter($saveFileHandler);
-        while ($data = fread($tmpStream, $blockSizeForRead)) {
-            fwrite($saveFileHandler, $data);
-        }        
         
-        fflush($saveFileHandler);
-        fclose($saveFileHandler);
+        $level = \Yii::$app->params['compressionLevel'];
+        $gzipFile = gzopen($pathToFile, 'wb'.$level);
+        $size = stream_copy_to_stream($inputFileHandler, $gzipFile);
+        $metadata->Size = $size;
+        gzclose($gzipFile);
+        
+        $gzipFileOpen = gzopen($pathToFile, 'rb'.$level);
+        $metadata->Type = FileRepositoryFS::getMimeType($gzipFileOpen);
+        gzclose($gzipFileOpen);
         
         FileRepositoryFS::saveFileMetadata($metadata);
         
@@ -123,13 +128,13 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         $position = ftell($handle);
         fseek($handle, 0);
         $str = fgets($handle, 100);
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME);
         $type = $finfo->buffer($str);
         fseek($handle, $position);
         return $type;
     }
 
-    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $compression = FALSE, $startPosition = 0) {
+    public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $overwriteAllFile = FALSE, $startPosition = 0) {
         //ToDo: more checks the input parameters
         assert('!is_null($inputFileHandler)', 'updateFileFormStream, inputFileHandler in null');
         // check conditions
@@ -143,51 +148,80 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         $metadata = FileRepositoryFS::loadFileMetadata(File::getFullPathMetadata($fileName));
         if ($metadata->Owner !== $userId) {
             throw new AccessDenied();
-        }
-        
-        $savedFileHandler = fopen($pathToFile, 'rb');
-        StreamHelper::atachDecompressionFilter($savedFileHandler);
-        // create tmp stream from exist file
+        }       
+        // read file
         $maxMemory = \Yii::$app->params['tempMaxmemory'];
         $tmpStream = fopen("php://temp/maxmemory:$maxMemory", 'r+');
-        $blockSizeForRead = \Yii::$app->params['blockSize'];
-        // extract saved file
-        while ($data = fread($savedFileHandler, $blockSizeForRead)) {
-            fwrite($tmpStream, $data);
+        if (!$overwriteAllFile) {
+            if ($startPosition > $metadata->Size) {
+                fclose($tmpStream);
+                throw new \InvalidArgumentException();
+            }
+            $existFile = gzopen($pathToFile, 'rb');        
+            stream_copy_to_stream($existFile, $tmpStream);
+            fseek($tmpStream, $startPosition);
+            gzclose($existFile);
         }
-        fclose($savedFileHandler);
-                       
-        if ($startPosition > $metadata->Size) {
-            throw new \InvalidArgumentException();
-        }
+        stream_copy_to_stream($inputFileHandler, $tmpStream);
+        fseek($tmpStream, 0);
         
-        // update tmp stream
-        fseek($tmpStream, $startPosition);
+        $level = \Yii::$app->params['compressionLevel'];
+        $updatedFile = gzopen($pathToFile, 'wb' . $level);
+        $newSize = stream_copy_to_stream($tmpStream, $updatedFile);
+        fclose($tmpStream);
+        gzclose($updatedFile);
         
-        if ($compression) {
-            StreamHelper::atachDecompressionFilter($inputFileHandler);
-        }        
-        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
-            fwrite($tmpStream, $data);
-        }
-//        fclose($inputFileHandler);
         // update metadata
-        $stat = fstat($tmpStream);
-        $metadata->update($stat['size']);
+        $file = gzopen($pathToFile, 'rw');
+        $type = FileRepositoryFS::getMimeType($file);
+        gzclose($file);                
+        $metadata->update($newSize, $type);
         FileRepositoryFS::saveFileMetadata($metadata);
         
-        // write updated file
-        fseek($tmpStream, 0);
-        $updateFile = fopen($pathToFile, 'wb');
-        StreamHelper::atachCompressionFilter($updateFile);
-        while ($data = fread($tmpStream, $blockSizeForRead)) {
-            fwrite($updateFile, $data);
-        }
-        fclose($tmpStream);
-        fflush($updateFile);
-        fclose($updateFile);
-        
         return $metadata;
+//        $savedFileHandler = fopen($pathToFile, 'rb');
+//        StreamHelper::atachDecompressionFilter($savedFileHandler);
+//        // create tmp stream from exist file
+//        $maxMemory = \Yii::$app->params['tempMaxmemory'];
+//        $tmpStream = fopen("php://temp/maxmemory:$maxMemory", 'r+');
+//        $blockSizeForRead = \Yii::$app->params['blockSize'];
+//        // extract saved file
+//        while ($data = fread($savedFileHandler, $blockSizeForRead)) {
+//            fwrite($tmpStream, $data);
+//        }
+//        fclose($savedFileHandler);
+//                       
+//        if ($startPosition > $metadata->Size) {
+//            throw new \InvalidArgumentException();
+//        }
+        
+        // update tmp stream
+//        fseek($tmpStream, $startPosition);
+//        
+//        if ($compression) {
+//            StreamHelper::atachDecompressionFilter($inputFileHandler);
+//        }        
+//        while ($data = fread($inputFileHandler, $blockSizeForRead)) {
+//            fwrite($tmpStream, $data);
+//        }
+//        fclose($inputFileHandler);
+        // update metadata
+//        $stat = fstat($tmpStream);
+//        $metadata->update($stat['size']);
+//        FileRepositoryFS::saveFileMetadata($metadata);
+//        
+//        // write updated file
+//        fseek($tmpStream, 0);
+//        $updateFile = fopen($pathToFile, 'wb');
+//        StreamHelper::atachCompressionFilter($updateFile);
+//        while ($data = fread($tmpStream, $blockSizeForRead)) {
+//            fwrite($updateFile, $data);
+//        }
+//        fclose($tmpStream);
+//        fflush($updateFile);
+//        fclose($updateFile);
+//        
+//        return $metadata;
     }
     
     public static function deleteFile($fileName, $userId) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\codeception\unit\models\data\FileRepositoryFS;
+namespace tests\codeception\unit\models\data\fileRepositoryFS;
 
 use Yii;
 use yii\codeception\TestCase;
@@ -40,10 +40,10 @@ class CreateFileTest extends TestCase
     
     public function testCreateFileFromStreamOk() {
         $pathToFile = File::getFullPathFile($this->fileName);
-        $handle = fopen($pathToFile, 'r');
+        $handle = gzopen($pathToFile, 'rb');
         $copyFileName = 'copy_' . $this->fileName;
-        $metadata = FileRepositoryFS::createFileFromStream($handle, $copyFileName, 1, TRUE);
-        fclose($handle);
+        $metadata = FileRepositoryFS::createFileFromStream($handle, $copyFileName, 1);
+        gzclose($handle);
         //check file content
         $pathToCopyFile = File::getFullPathFile($copyFileName);
         $this->assertFileEquals($pathToFile, $pathToCopyFile);
@@ -55,7 +55,7 @@ class CreateFileTest extends TestCase
         $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Modified);
         $this->assertEquals((new \DateTime('now'))->format('Y-M-D'), $modified->format('Y-M-D'));
         $this->assertEquals($metadata->Modified, $metadata->Created);
-        $this->assertEquals('text/plain', $metadata->Type);
+        $this->assertEquals('text/plain; charset=us-ascii', $metadata->Type);
         $this->assertEquals(1, $metadata->Owner);
         
         unlink($pathToCopyFile);
