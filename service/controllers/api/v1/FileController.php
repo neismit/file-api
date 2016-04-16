@@ -88,6 +88,12 @@ class FileController extends Controller {
         } 
         try {
             $metadata = $this->fileRepository->getFileMetadata($name, $userId);
+            
+            //check cache
+            if ($this->checkIfNoneMatch($metadata->Etag)) {
+                Yii::$app->response->statusCode = 304;
+                return;
+            }
 
             $this->setMetadataHeader($metadata);
             if (Yii::$app->request->isHead) {
@@ -103,7 +109,7 @@ class FileController extends Controller {
                 $stat = fstat($fileHandler);
                 $sizeContent = $stat['size'];
             }
-
+            $this->setEtag($metadata->Etag);
             Yii::$app->response->sendStreamAsFile($fileHandler, $metadata->Name, 
                 ['mimeType' => $metadata->Type, 'fileSize' => $sizeContent]);
         } catch (AccessDenied $ex) {
@@ -144,6 +150,7 @@ class FileController extends Controller {
                 return;
             }
             $this->setMetadataHeader($metadata);
+            $this->setEtag($metadata->Etag);
             Yii::$app->response->statusCode = 201;
             return;
         }
@@ -154,6 +161,7 @@ class FileController extends Controller {
         try {
             $metadata = $this->fileRepository->updateFileFromStream($data, $name, $userId, $overwriteFile, intval($position));
             $this->setMetadataHeader($metadata);
+            $this->setEtag($metadata->Etag);
             Yii::$app->response->statusCode = 200;
         } catch (AccessDenied $ex) {
             Yii::warning('actionUpdate: Access denied. file: ' . $name . ' userId: ' . $userId);
@@ -251,5 +259,24 @@ class FileController extends Controller {
         } else {
             return fopen("php://input", "r");
         }
+    }
+    
+    private function setEtag($hash) {
+        $responseHeaders = Yii::$app->response->headers;
+        $responseHeaders->set('Etag', $hash);
+    }
+    
+    /**
+     * Check cache header (on Etag)
+     * @param string $hash
+     * @return boolean TRUE if Etag equals
+     */
+    private function checkIfNoneMatch($hash) {
+        $requestHeaders = Yii::$app->request->headers;
+        if (!$requestHeaders->has('If-None-Match')) {
+            return FALSE;
+        }
+        $ifNoneMatch = $requestHeaders->get('If-None-Match');
+        return $ifNoneMatch === $hash;
     }
 }

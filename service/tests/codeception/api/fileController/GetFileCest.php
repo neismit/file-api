@@ -58,6 +58,9 @@ class GetFileCest
         $I->seeHttpHeader('Content-Length', 24);
         $I->seeHttpHeader('X-File-Metadata', $jsonMetadata);
         $I->seeResponseContains('test string');
+        
+        // Etag from FakeRepository
+        $I->seeHttpHeader('Etag', '74c5d59f91ca920b5236b35ce4ecd9e1');
     }
     
     public function getGzipFileOnNameOk(ApiTester $I) {
@@ -80,7 +83,19 @@ class GetFileCest
         $handle = FakeFileRepository::getFileStream('t1.txt', 1, TRUE);
         $str = fgets($handle);
         $I->seeResponseContains($str);
-    }    
+        $I->seeHttpHeader('Etag', '74c5d59f91ca920b5236b35ce4ecd9e1');
+    }
+    
+    public function getFileOnNameNotModified(ApiTester $I) {
+        $I->wantTo('GET file t1.txt NotModified');
+        $I->amBearerAuthenticated('test1-token');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->haveHttpHeader('If-None-Match', '74c5d59f91ca920b5236b35ce4ecd9e1');
+        $I->sendGET('api/v1/file', ['name' => 't1.txt']);
+
+        $I->wantTo('response 304');
+        $I->seeResponseCodeIs(304);
+    }
     
     /**
      * Test GET file, not found

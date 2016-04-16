@@ -22,7 +22,8 @@ class FakeFileRepository implements IFileRepository {
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
                 'Type' => 'text/plain; charset=us-ascii',
-                'Owner' => 1
+                'Owner' => 1,
+                'Etag' => '74c5d59f91ca920b5236b35ce4ecd9e1'
             ]);
         }
         if ($fileName === 't2' && $userId === 1) {
@@ -32,7 +33,8 @@ class FakeFileRepository implements IFileRepository {
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
                 'Type' => 'text/plain; charset=us-ascii',
-                'Owner' => 1
+                'Owner' => 1,
+                'Etag' => '74c5d59f91ca920b5236b35ce4ecd9e1'
             ]);
         }
         if ($fileName === 'test img' && $userId === 1) {
@@ -42,7 +44,8 @@ class FakeFileRepository implements IFileRepository {
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
                 'Type' => 'image/jpg',
-                'Owner' => 1
+                'Owner' => 1,
+                'Etag' => '74c5d59f91ca920b5236b35ce4ecd9e1'
             ]);
         }
         if ($fileName === 'test2img' && $userId === 2) {
@@ -52,7 +55,8 @@ class FakeFileRepository implements IFileRepository {
                 'Modified' => '2016-04-06T06:34:46+0000',
                 'Created' => '2016-04-06T06:34:46+0000',
                 'Type' => 'image/jpg',
-                'Owner' => 2
+                'Owner' => 2,
+                'Etag' => '74c5d59f91ca920b5236b35ce4ecd9e1'
             ]);
         }
         if (($fileName === 't1.txt' || $fileName === 't2' || $fileName === 'test img') 

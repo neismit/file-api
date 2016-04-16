@@ -52,6 +52,8 @@ class CreateFileCest
         //check metadata header      
 //        $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
         $I->seeHttpHeader('X-File-Metadata');
+        
+        $I->seeHttpHeader('Etag', $this->metadata->Etag);
     }
     
     public function testCreateFileGzipOk(ApiTester $I)
@@ -68,6 +70,7 @@ class CreateFileCest
         //check metadata header      
 //        $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
         $I->seeHttpHeader('X-File-Metadata');
+        $I->seeHttpHeader('Etag', $this->metadata->Etag);
     }
     
     public function testCreateFileMissingName (ApiTester $I) {
@@ -102,7 +105,9 @@ class CreateFileCest
         //check metadata header      
 //        $this->metadata->Name = $this->originFileName;
 //        $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
-        $I->seeHttpHeader('X-File-Metadata');
+        $I->seeHttpHeader('X-File-Metadata');        
+        $metadata = FileRepositoryFS::getFileMetadata($this->originFileName, 1);
+        $I->seeHttpHeader('Etag', $metadata->Etag);
     }
     
     public function testUpdateOverwriteFilePut (ApiTester $I) {
@@ -118,6 +123,9 @@ class CreateFileCest
 //        $this->metadata->Name = $this->originFileName;
 //        $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
         $I->seeHttpHeader('X-File-Metadata');
+        
+        $metadata = FileRepositoryFS::getFileMetadata($this->originFileName, 1);
+        $I->seeHttpHeader('Etag', $metadata->Etag);
     }
     
     public function testOverWriteFilePutGzipOk (ApiTester $I) {
@@ -136,6 +144,9 @@ class CreateFileCest
         // modififed date fail this assertion
         // $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
         $I->seeHttpHeader('X-File-Metadata');
+        
+        $metadata = FileRepositoryFS::getFileMetadata($this->originFileName, 1);
+        $I->seeHttpHeader('Etag', $metadata->Etag);
     }
     
     public function testUpdateFilePatchPositionOk (ApiTester $I) {
@@ -151,6 +162,9 @@ class CreateFileCest
         $this->metadata->Name = $this->originFileName;
 //        $I->seeHttpHeader('X-File-Metadata', json_encode($this->metadata));
         $I->seeHttpHeader('X-File-Metadata');
+        
+        $metadata = FileRepositoryFS::getFileMetadata($this->originFileName, 1);
+        $I->seeHttpHeader('Etag', $metadata->Etag);
     }
     
     public function testUpdateFilePatchPositionError (ApiTester $I) {
