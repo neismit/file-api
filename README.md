@@ -10,15 +10,16 @@ You will need the following things properly installed on your computer:
 #### Installation
 
 * `git clone` this repository
-* `vagrant up` in the repository directory
+* `compser install` in `file-api/service` folder
+* `vagrant up` in the repository folder (download ubunty/trusty64 box)
 * `vagrant ssh` connect to VM
-* may need `compser install` in `/vagrant/service` folder
 * `php -S 0.0.0.0:8080 -t /vagrant/service/web` run service (it is available in host: localhost:3000/api/v1/file)
 
 #### Running Tests
 
-In a VM follow:
+In the VM follow:
 * `cd /vagrant/service/test`
+* `../vendor/bin/codecept build`
 * `../vendor/bin/codecept run unit` run the unit tests
 * `../vendor/bin/codecept run api` run the functional/acceptance tests
 
@@ -39,6 +40,7 @@ In a VM follow:
   'Authorization: Bearer test1-token'
 
 * /api/v1/file - main resource
+* OPTIONS
 * GET - return list file of user or file, if specified the file name (or 'name' parameter in uri)
   Return:
   - 200 and file, file metadata in http header (X-File-Metadata)
@@ -67,6 +69,7 @@ In a VM follow:
   - 200
   - 404
   - 403
+
 
 Support GZIP request and response.
 GET maintains cache with Etag.
