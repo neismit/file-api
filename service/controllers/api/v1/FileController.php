@@ -122,8 +122,9 @@ class FileController extends Controller {
     
     /**
      * PUT, PATH Upload file, creating file or overwrite existing file
+     * PUT with existing file name overwrite this file
+     * PATH with $position overwrite part file
      * @param string $name - file name
-     * @param boolean $overwrite - overwrite exist file
      * @param integer $position - request of write data to an existing file with $position
      */
     public function actionUpload($name = NULL, $position = 0) {

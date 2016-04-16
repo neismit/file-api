@@ -61,8 +61,11 @@ $config = [
                     'patterns' => [
                         'OPTIONS' => 'options',
                         'GET,HEAD' => 'index', 
+                        'GET,HEAD <name:\w+>' => 'index', 
                         'PUT,PATCH' => 'upload',
-                        'DELETE ' => 'delete',
+                        'PUT,PATCH <name:\w+>' => 'upload',
+                        'DELETE' => 'delete',
+                        'DELETE <name:\w+>' => 'delete',
                     ],
 //                    'extraPatterns' => [
 ////                      'DELETE files/<id>' => 'file/delete',
