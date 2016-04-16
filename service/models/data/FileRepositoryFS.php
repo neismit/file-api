@@ -111,8 +111,9 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         gzclose($gzipFile);
         
         $gzipFileOpen = gzopen($pathToFile, 'rb'.$level);
-        $metadata->Type = FileRepositoryFS::getMimeType($gzipFileOpen);
+        $metadata->Type = FileMetadata::getMimeType($gzipFileOpen);
         gzclose($gzipFileOpen);
+        $metadata->setEtag();
         
         FileRepositoryFS::saveFileMetadata($metadata);
         
@@ -121,18 +122,18 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
     
     /**
      * Get mime type on stream
-     * @param resource $handle not close handle, not change pointer position
+     * @param resource $handle not close handle, not change pointer position, resource must be acces for read
      * @return string mime type
      */
-    private static function getMimeType($handle) {
-        $position = ftell($handle);
-        fseek($handle, 0);
-        $str = fgets($handle, 100);
-        $finfo = new \finfo(FILEINFO_MIME);
-        $type = $finfo->buffer($str);
-        fseek($handle, $position);
-        return $type;
-    }
+//    private static function getMimeType($handle) {
+//        $position = ftell($handle);
+//        fseek($handle, 0);
+//        $str = fgets($handle, 100);
+//        $finfo = new \finfo(FILEINFO_MIME);
+//        $type = $finfo->buffer($str);
+//        fseek($handle, $position);
+//        return $type;
+//    }
 
     public static function updateFileFromStream($inputFileHandler, $fileName, $userId, $overwriteAllFile = FALSE, $startPosition = 0) {
         //ToDo: more checks the input parameters
@@ -173,9 +174,9 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         
         // update metadata
         $file = gzopen($pathToFile, 'rw');
-        $type = FileRepositoryFS::getMimeType($file);
+        $type = FileMetadata::getMimeType($file);
         gzclose($file);                
-        $metadata->update($newSize, $type);
+        $metadata->update($newSize, $type, TRUE);
         FileRepositoryFS::saveFileMetadata($metadata);
         
         return $metadata;

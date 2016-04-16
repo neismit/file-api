@@ -6,7 +6,8 @@ use yii\base\Model;
 use app\models\File;
 
 /**
- * Description of file metadata
+ * Metadata file
+ * When create file all field FileMetadata must be fill
  *
  * @author andrey
  */
@@ -18,7 +19,7 @@ class FileMetadata extends Model {
         parent::__construct($config);
     }
 
-        /**
+    /**
      * File name
      * @var string 
      */
@@ -56,59 +57,64 @@ class FileMetadata extends Model {
     public $Type;
     
     /**
-     * @deprecated 2016-04-13 Metadata created in IFileRepository/createFileFromStream
-     * Create metadate from file
-     * @param string $fileName
-     * @param string $type Mime file type
-     * @param integer $userId
-     * @return \app\models\FileMetadata
-     * @throws \InvalidArgumentException if the file doesn't exist
+     * Hash file
+     * @var string
      */
-    public static function createMetadata($fileName, $userId, $size, $mimeType) {
-        $fullPathFile = File::getFullPathFile($fileName);
-        if (!file_exists($fullPathFile)) {
-            throw new \InvalidArgumentException();
-        }
-        $metadata = new FileMetadata();
-        $metadata->Name = $fileName;
-        $metadata->Size = filesize($fullPathFile);
-        $metadata->Created = (new \DateTime('now'))->format(\DateTime::ISO8601);
-        $metadata->Modified = $metadata->Created;
-        $metadata->Owner = $userId;
-        
-//        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-//        $mimeType = finfo_file($finfo, $fullPathFile);
-//        finfo_close($finfo);
-        $metadata->Type = FileMetadata::getMimeType($fullPathFile);
-        return $metadata;
+    public $Etag;
+
+    /**
+     * Calculate and set up Etag
+     * @param string $pathToFile
+     */
+    public function setEtag() {
+        assert('!is_null($this->Name) || !empty(trim($this->Name))', 'Name is null or empty');
+        $pathToFile = File::getFullPathFile($this->Name);
+        $this->Etag = FileMetadata::calcEtag($pathToFile);
+    }
+
+    /**
+     * Calculate hash of file for etag
+     * @param string $pathToFile
+     * @return string Hash file
+     */
+    public static function calcEtag($pathToFile) {
+        assert('file_exists($pathToFile)', 'File not found in calcEtag');
+        return md5_file($pathToFile);
     }
     
+    public function setType($handle) {
+        $this->Type = FileMetadata::getMimeType($handle);
+    }
+
     /**
-     * @deprecated 2016-04-13 Metadata created in IFileRepository/createFileFromStream
-     * 
+     * Get mime type on stream
+     * @param resource $handle not close handle, not change pointer position, resource must be access for read
+     * @return string mime type with encoding
      */
-    private static function getMimeType($pathToFile) {
-        $handle = fopen($pathToFile, 'rb');
-        $params = \Yii::$app->params['compressionParameters'];
-        stream_filter_append($handle, 'zlib.inflate', STREAM_FILTER_READ, $params);        
-        
+    public static function getMimeType($handle) {
+        $position = ftell($handle);
+        fseek($handle, 0);
         $str = fgets($handle, 100);
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME);
         $type = $finfo->buffer($str);
-        fclose($handle);
+        fseek($handle, $position);
         return $type;
     }
-    
+
     /**
      * Update metadata when file changed
      * @param integer $size
      * @param string|NULL $mimeType
+     * @param boolean $calcEtag Calculate etag for current file
      */
-    public function update($size, $mimeType = NULL) {
+    public function update($size, $mimeType = NULL, $calcEtag = TRUE) {
         $this->Modified = (new \DateTime('now'))->format(\DateTime::ISO8601);
         $this->Size = $size;
         if (!is_null($mimeType)) {
             $this->Type = $mimeType;
+        }
+        if ($calcEtag) {
+            $this->setEtag();
         }
     }
 }

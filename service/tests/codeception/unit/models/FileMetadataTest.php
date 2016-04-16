@@ -6,6 +6,7 @@ use yii\codeception\TestCase;
 use app\models\File;
 use app\models\FileMetadata;
 use tests\codeception\helper\FileHelper;
+use app\models\data\FileRepositoryFS;
 
 class FileMetadataTest extends TestCase
 {
@@ -14,71 +15,73 @@ class FileMetadataTest extends TestCase
      */
     protected $tester;
 
-//    private $fileNameTest = 'test.txt';
-//
-//    private $fileNameUpdateTest = 'test_update';
-//    
-//    protected function setUp()
-//    {
-//        parent::setUp();
-//        // create file for test\createFile
-//        FileHelper::createFile(File::getFullPathFile($this->fileNameTest), 'test');
-//        FileHelper::createFile(File::getFullPathFile($this->fileNameUpdateTest), 'test');
-//    }
-//
-//    protected function tearDown() {
-//        unlink(File::getFullPathFile($this->fileNameTest));
-//        unlink(File::getFullPathFile($this->fileNameUpdateTest));
-//        parent::tearDown();
-//    }
-//
-//    /**
-//     * Create file metadata, check all fileds
-//     */
-//    public function testCreateMetadata() {
-//        $metadata = FileMetadata::createMetadata($this->fileNameTest, 1);
-//        $this->assertInstanceOf(FileMetadata::class, $metadata);
-//        
-//        $this->assertEquals($this->fileNameTest, $metadata->Name);
-//        
-//        $this->assertEquals(12, $metadata->Size);
-//
-//        $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Modified);
-//        $this->assertEquals((new \DateTime('now'))->format('Y-M-D'), $modified->format('Y-M-D'));
-//
-//        $this->assertEquals($metadata->Modified, $metadata->Created);
-//        $this->assertEquals('text/plain', $metadata->Type);
-//        $this->assertEquals(1, $metadata->Owner);
-//    }
-//    
-//    /**
-//     * Testing create metadata, file not found
-//     * @expectedException \InvalidArgumentException
-//     */
-//    public function testCreateMetadataFileNotFound() {
-//        FileMetadata::createMetadata('textFail', 1);
-//    }
-//    
-//    public function testUpdateMetadataOk() {
-//        $metadata = FileMetadata::createMetadata($this->fileNameUpdateTest, 1);
-//        $dateCreate = new \DateTime('now');
-//        $dateCreate->setDate(2015, 1, 1);
-//        $dateCreateString = $dateCreate->format(\DateTime::ISO8601);
-//        $metadata->Created = $dateCreateString;
-//        $metadata->Modified = $dateCreateString;
-//        // change file
-//        $pathToFile = File::getFullPathFile($this->fileNameUpdateTest);
-//        $handle = fopen($pathToFile, 'w');
-//        fwrite($handle, '1');
-//        fflush($handle);
-//        fclose($handle);
-//        
-//        $metadata->update();
-//        
-//        // check changes
-//        $this->assertEquals(filesize($pathToFile), $metadata->Size);
-//        $this->assertNotEquals($metadata->Created, $metadata->Modified);
-//        $this->assertNotEquals($dateCreateString, $metadata->Modified);
-//    }
+    private $fileNameTest = 'test.txt';
+    
+    private $metadata = NULL;
 
+    protected function setUp()
+    {
+        parent::setUp();
+        // create file for test\createFile
+        $handle = FileHelper::createFileInMemory('test file');
+        $this->metadata = FileRepositoryFS::createFileFromStream($handle, $this->fileNameTest, 1);
+    }
+
+    protected function tearDown() {
+        unlink(File::getFullPathFile($this->fileNameTest));
+        unlink(File::getFullPathMetadata($this->fileNameTest));
+        parent::tearDown();
+    }    
+
+    public function testEtagInMetadata() {
+        $pathToFile = File::getFullPathFile($this->fileNameTest);
+        $md5 = md5_file($pathToFile);
+        
+        $this->metadata->setEtag();
+        
+        $this->assertEquals($md5, $this->metadata->Etag);
+    }
+    
+    public function testMimeTypeInMetadata() {
+        $pathToFile = File::getFullPathFile($this->fileNameTest);
+        $handle = fopen($pathToFile, 'rb');
+        $this->metadata->setType($handle);
+        fclose($handle);
+        //gzip becose fopen
+        $this->assertEquals('application/x-gzip; charset=binary', $this->metadata->Type);
+    }
+    
+    public function testCreateMetadata() {
+        $metadata = new FileMetadata();
+        $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Created);
+        $this->assertEquals($metadata->Created, $metadata->Modified);
+        $this->assertEquals((new \DateTime('now'))->format('Y-M-D HH:MM'), $modified->format('Y-M-D HH:MM'));
+        $this->assertNull($metadata->Name);
+        $this->assertNull($metadata->Size);
+        $this->assertNull($metadata->Type);
+        $this->assertNull($metadata->Etag);
+        $this->assertNull($metadata->Owner);        
+    }
+    
+    public function testUpdateMetadata() {
+        $pathToFile = File::getFullPathFile($this->fileNameTest);
+        $gz = gzopen($pathToFile, 'wb');
+        gzwrite($gz, 'change text');
+        gzclose($gz);
+        
+        $metadata = $this->metadata;
+        $metadata->update(100, 'text/plane', TRUE);
+        //check change
+        $this->assertEquals(100, $metadata->Size);
+        $this->assertEquals('text/plane', $metadata->Type);
+        $this->assertEquals(md5_file($pathToFile), $metadata->Etag);
+        $modified = \DateTime::createFromFormat(\DateTime::ISO8601, $metadata->Created);
+        $this->assertEquals((new \DateTime('now'))->format('Y-M-D HH:MM'), $modified->format('Y-M-D HH:MM'));
+        
+        //check other filed
+        $oldMetadata = FileRepositoryFS::getFileMetadata($this->fileNameTest, 1);
+        $this->assertEquals($oldMetadata->Name, $metadata->Name);
+        $this->assertEquals($oldMetadata->Owner, $metadata->Owner);
+        $this->assertEquals($oldMetadata->Created, $metadata->Created);
+    }
 }
