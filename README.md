@@ -69,4 +69,4 @@ In a VM follow:
   - 403
 
 Support GZIP request and response.
-GET support cache on Etag.
+GET maintains cache with Etag.
