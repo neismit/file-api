@@ -41,13 +41,11 @@ interface IFileRepository {
      * @param string $fileName
      * @param integer $userId
      * @param boolean $compression TRUE for returns compressed stream
-     * @param integer $position position in file
-     * @param integer $length length return content
      * @return resource
      * @throws NotFound
      * @throws AccessDenied
      */
-    public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0);
+    public static function getFileStream($fileName, $userId, $compression = TRUE);
 
     /**
      * Create file and metadata for file from stream.

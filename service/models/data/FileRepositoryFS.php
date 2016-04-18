@@ -55,7 +55,7 @@ class FileRepositoryFS implements \app\models\data\IFileRepository {
         return $filesList;
     }
     
-    public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0) {
+    public static function getFileStream($fileName, $userId, $compression = TRUE) {
         $pathToMetadata = File::getFullPathMetadata($fileName);
         $metadata = FileRepositoryFS::loadFileMetadata($pathToMetadata);
         if ($metadata->Owner !== $userId) {

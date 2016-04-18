@@ -93,8 +93,8 @@ class FakeFileRepository implements IFileRepository {
         }
     }
     
-    public static function getFileStream($fileName, $userId, $compression = TRUE, $position = 0, $length = 0) {
-        return FileRepositoryFS::getFileStream($fileName, $userId, $compression, $position, $length);
+    public static function getFileStream($fileName, $userId, $compression = TRUE) {
+        return FileRepositoryFS::getFileStream($fileName, $userId, $compression);
 //        if ($fileName === 't1.txt' && $userId === 1) {
 //            if($compression) {
 //                $handle = gzopen('php://memory', 'w+');
